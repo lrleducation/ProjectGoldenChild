@@ -7,7 +7,15 @@
     const opts={credentials:'same-origin',...options};
     if(opts.body && !(opts.body instanceof FormData) && typeof opts.body!=='string'){opts.headers={...(opts.headers||{}),'Content-Type':'application/json'};opts.body=JSON.stringify(opts.body);}
     const r=await fetch(url,opts); let data={}; try{data=await r.json();}catch{}
-    if(r.status===401){showLogin();throw new Error('Your session has ended. Please sign in again.');}
+    if(r.status===401){
+      // A 401 from the login endpoint means the credentials were rejected.
+      // Do not mislabel that as an expired session.
+      if(url==='/api/admin-login'){
+        throw new Error(data.message||'Email, password or authenticator code is incorrect.');
+      }
+      showLogin();
+      throw new Error(data.message||'Your session has ended. Please sign in again.');
+    }
     if(!r.ok) throw new Error(data.message||`Request failed (${r.status})`); return data;
   };
   const showLogin=()=>{$('#admin-login').hidden=false;$('#admin-app').hidden=true;};

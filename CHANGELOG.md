@@ -1,3 +1,9 @@
+# v1.0.7 – Admin login error-message fix
+
+- Fixed the admin sign-in page incorrectly showing “Your session has ended” when the login endpoint rejected the email, password or authenticator code.
+- Invalid sign-in details now show the correct generic message: “Email, password or authenticator code is incorrect.”
+- No authentication security has been weakened; the server still does not reveal which individual credential failed.
+
 # v1.0.6 – Easy Windows admin setup
 
 - Added `SETUP_ADMIN_WINDOWS.bat` for a guided administrator setup.
