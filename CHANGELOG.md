@@ -1,3 +1,23 @@
+# v1.0.11 – Public submission rate-limit repair
+
+- Fixed public forms reaching the abuse limit during legitimate corrections, retries and testing.
+- Referral, Contact and Go Gold requests are now counted only after validation and duplicate detection.
+- Increased the public form threshold to 30 validated new submissions per 15 minutes per connection.
+- Parent/carer registrations and third-party referrals have separate referral buckets.
+- Browser retry logic no longer retries HTTP 429 immediately.
+- Duplicate submission IDs are checked before rate limiting, so a connection retry cannot block an already-saved form.
+- Added Retry-After responses for genuine high-volume abuse.
+- Admin login rate limiting remains unchanged.
+
+# v1.0.10 – Submission schema/cache repair and stronger health checks
+
+- System Health now checks every database column required by referrals, contact forms, Go Gold, events and Harper's Heroes, not just table reachability.
+- Fixed a misleading green health check where `select id` worked but public inserts could still fail because PostgREST had stale/missing column metadata.
+- Added a safe SQL repair that creates any missing submission columns and forces PostgREST's schema cache/notification queue to refresh.
+- The SQL finishes with a missing-column report; successful repair returns zero rows.
+- System Health now reports whether optional instant email alerts are configured.
+- Public submission retry and duplicate-protection from v1.0.9 remain enabled.
+
 # v1.0.9 – Submission reliability and Supabase Data API repair
 
 - Fixed the main production submission failure for new Supabase projects by explicitly granting the server-side `service_role` Data API permissions.

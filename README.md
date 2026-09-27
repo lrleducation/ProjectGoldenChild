@@ -84,3 +84,24 @@ Do not use the publishable key for the private server-side database connection i
 If referrals, contact forms or Go Gold submissions return a secure-save error, run `supabase/repair-v1.0.9-submission-pipeline.sql` in the Supabase SQL Editor, then redeploy. The migration is designed to be safe to run repeatedly and does not delete existing records.
 
 The admin dashboard now includes a **System health** check. A healthy production setup reports all required tables as OK.
+
+
+## v1.0.10 submission repair
+
+If a public form reports “The secure registration service is being updated”, run:
+
+`supabase/repair-v1.0.10-submission-schema-cache.sql`
+
+The final query must return zero rows. Then redeploy v1.0.10 and use Admin → System Health → Check now.
+
+A green v1.0.10 health result validates all fields used by the application, rather than only confirming that each table has an `id` column.
+
+Database submissions appear in the admin area immediately after a successful save. Optional email alerts require:
+`RESEND_API_KEY`, `FROM_EMAIL`, and `NOTIFICATION_EMAIL`.
+
+
+## v1.0.11 public submission rate limiting
+
+Public referral, contact and Go Gold forms now count only fully validated, genuinely new submissions against the anti-abuse limit. Invalid form corrections and duplicate network retries do not consume the limit.
+
+A new deployment also clears any old in-memory rate-limit bucket from earlier versions.

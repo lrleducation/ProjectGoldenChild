@@ -9,7 +9,6 @@ const validId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-
 
 module.exports = async function handler(req,res){
   if(req.method!=='POST') return json(res,405,{message:'Method not allowed.'});
-  const rl=rateLimit(`referral:${getIp(req)}`,{limit:8}); if(!rl.ok) return json(res,429,{message:'Too many submissions. Please try again later.'});
   const requestId=crypto.randomUUID().slice(0,8).toUpperCase();
   try{
     const b=await readBody(req);
@@ -32,7 +31,25 @@ module.exports = async function handler(req,res){
       row={...row,referrer_name:cleanText(b.referrer_name,120),referrer_relationship:cleanText(b.referrer_relationship,160),referrer_email:cleanText(b.referrer_email,180),referrer_phone:cleanText(b.referrer_phone,60),child_name:cleanText(b.child_name,160),family_contact_name:cleanText(b.family_contact_name,160),family_contact_email:cleanText(b.family_contact_email,180),family_contact_phone:cleanText(b.family_contact_phone,60),family_aware:true,referral_reason:cleanText(b.referral_reason,1500)};
     }
     const suppliedId=validId(b.submission_id)?String(b.submission_id):null;
-    if(suppliedId){const existing=await store.get('referrals',suppliedId); if(existing) return json(res,200,{ok:true,reference:existing.id.slice(0,8).toUpperCase(),duplicate:true}); row.id=suppliedId;}
+    if(suppliedId){
+      const existing=await store.get('referrals',suppliedId);
+      if(existing) return json(res,200,{ok:true,reference:existing.id.slice(0,8).toUpperCase(),duplicate:true});
+      row.id=suppliedId;
+    }
+
+    // Only count a request against the abuse limit AFTER the form has passed
+    // validation and AFTER duplicate/retry detection. This prevents families
+    // being locked out because of form corrections, connection retries or
+    // repeated testing from the same household/school/hospital network.
+    const rl=rateLimit(`referral:${route}:${getIp(req)}`,{limit:30,windowMs:15*60*1000});
+    if(!rl.ok){
+      res.setHeader('Retry-After',String(rl.retryAfter||60));
+      return json(res,429,{
+        message:'We have received a high number of submissions from this connection. Please wait a few minutes and try again.',
+        retryAfter:rl.retryAfter||60
+      });
+    }
+
     const record=await store.insert('referrals',row);
     audit(null,'create','referral',record.id,{route}).catch(()=>{});
     sendEmail({subject:`New Project Golden Child ${route==='parent'?'registration':'referral'} — ${record.id.slice(0,8)}`,text:`A new ${route} submission has been received.\nReference: ${record.id}\nPlease sign in to the secure admin area to review it.`,replyTo:route==='parent'?row.submitter_email:row.referrer_email}).catch(err=>console.error('Referral email failed',err.message));

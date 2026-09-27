@@ -16,7 +16,10 @@ window.PGCSubmission = (() => {
         if(text){try{data=JSON.parse(text);}catch{data={message:text};}}
         if(r.ok) return data;
         const err=new Error(data.message||`Request failed (${r.status}).`); err.status=r.status; lastError=err;
-        if(![408,425,429,500,502,503,504].includes(r.status) || attempt===retries) throw err;
+        // Retry only genuinely transient transport/server failures.
+        // Never auto-retry HTTP 429: retrying immediately only extends the
+        // rate-limit problem and can create a poor experience for families.
+        if(![408,425,500,502,503,504].includes(r.status) || attempt===retries) throw err;
       } catch(err) {
         lastError=err;
         if(attempt===retries) throw err;

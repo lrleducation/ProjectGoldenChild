@@ -44,7 +44,16 @@
     const text=$('#system-health-text'), detail=$('#system-health-detail');
     if(!text)return;
     text.textContent='Checking database access…'; if(detail)detail.textContent='';
-    try{const d=await api('/api/admin-diagnostics'); text.textContent=d.ok?'All submission tables are connected and reachable.':'One or more submission tables need attention.'; text.style.color=d.ok?'#17633b':'#9d1d12'; if(detail)detail.textContent=Object.entries(d.checks||{}).map(([k,v])=>`${k}: ${v.ok?'OK':`${v.code||v.status||'error'} ${v.detail||''}`}`).join(' · ');}catch(err){text.textContent='Database check failed.';text.style.color='#9d1d12';if(detail)detail.textContent=err.message;}
+    try{
+      const d=await api('/api/admin-diagnostics');
+      text.textContent=d.ok?'All submission tables and required fields are ready.':'One or more database fields need attention before public submissions can be accepted.';
+      text.style.color=d.ok?'#17633b':'#9d1d12';
+      if(detail){
+        const checks=Object.entries(d.checks||{}).map(([k,v])=>`${k}: ${v.ok?'OK':`${v.code||v.status||'error'} ${v.detail||''}`}`);
+        checks.push(`email alerts: ${d.configuration?.emailConfigured?'configured':'not configured (database submissions still work)'}`);
+        detail.textContent=checks.join(' · ');
+      }
+    }catch(err){text.textContent='Database check failed.';text.style.color='#9d1d12';if(detail)detail.textContent=err.message;}
   }
   $('#check-system-health')?.addEventListener('click',loadDiagnostics);
 
