@@ -1,4 +1,6 @@
-# Project Golden Child v1
+# Project Golden Child v1.0.1
+
+This update corrects Vercel routing for all clean public page URLs and replaces the original flat ribbon artwork with a more realistic gold childhood-cancer awareness ribbon across the site.
 
 Production-oriented first version of the Project Golden Child website and private administration system.
 

@@ -1,124 +1,35 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/public/index.html"
-    },
-    {
-      "source": "/our-story",
-      "destination": "/public/our-story.html"
-    },
-    {
-      "source": "/harpers-heroes",
-      "destination": "/public/heroes.html"
-    },
-    {
-      "source": "/events",
-      "destination": "/public/events.html"
-    },
-    {
-      "source": "/go-gold",
-      "destination": "/public/go-gold.html"
-    },
-    {
-      "source": "/refer",
-      "destination": "/public/refer.html"
-    },
-    {
-      "source": "/privacy",
-      "destination": "/public/privacy.html"
-    },
-    {
-      "source": "/contact",
-      "destination": "/public/contact.html"
-    },
-    {
-      "source": "/admin",
-      "destination": "/public/admin/index.html"
-    },
-    {
-      "source": "/styles.css",
-      "destination": "/public/styles.css"
-    },
-    {
-      "source": "/site.js",
-      "destination": "/public/site.js"
-    },
-    {
-      "source": "/refer.js",
-      "destination": "/public/refer.js"
-    },
-    {
-      "source": "/events.js",
-      "destination": "/public/events.js"
-    },
-    {
-      "source": "/go-gold.js",
-      "destination": "/public/go-gold.js"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/public/assets/$1"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/api/robots"
-    },
-    {
-      "source": "/contact.js",
-      "destination": "/public/contact.js"
-    },
-    {
-      "source": "/admin/admin.js",
-      "destination": "/public/admin/admin.js"
-    },
-    {
-      "source": "/admin/admin.css",
-      "destination": "/public/admin/admin.css"
-    }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/our-story", "destination": "/our-story.html" },
+    { "source": "/harpers-heroes", "destination": "/heroes.html" },
+    { "source": "/events", "destination": "/events.html" },
+    { "source": "/go-gold", "destination": "/go-gold.html" },
+    { "source": "/refer", "destination": "/refer.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/robots.txt", "destination": "/api/robots" }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), geolocation=(), microphone=(self), payment=()"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; img-src 'self' data: https:; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), geolocation=(), microphone=(self), payment=()" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; img-src 'self' data: https:; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'" }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
+        { "key": "Cache-Control", "value": "no-store" }
       ]
     }
   ]
