@@ -1,3 +1,10 @@
+# v1.0.8 – Admin JSON compatibility fix
+
+- Fixed a Windows PowerShell setup issue where a single administrator could be written to `ADMIN_USERS_JSON` as a JSON object instead of a one-item JSON array.
+- Production authentication now accepts either format safely.
+- Fixed the Windows setup helper so new setups always generate the documented array format.
+- No password, TOTP or session-security checks have been weakened.
+
 # v1.0.7 – Admin login error-message fix
 
 - Fixed the admin sign-in page incorrectly showing “Your session has ended” when the login endpoint rejected the email, password or authenticator code.

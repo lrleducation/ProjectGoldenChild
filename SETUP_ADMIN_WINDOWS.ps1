@@ -63,7 +63,7 @@ if (-not $jsonMatch.Success) {
 }
 
 $userObj = $jsonMatch.Value | ConvertFrom-Json
-$adminJson = @($userObj) | ConvertTo-Json -Compress
+$adminJson = ConvertTo-Json -InputObject @($userObj) -Compress
 
 $secretMatch = [regex]::Match($joined, 'Authenticator secret:\s*([A-Z2-7]+)')
 $authSecret = if ($secretMatch.Success) { $secretMatch.Groups[1].Value } else { "" }
