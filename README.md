@@ -105,3 +105,8 @@ Database submissions appear in the admin area immediately after a successful sav
 Public referral, contact and Go Gold forms now count only fully validated, genuinely new submissions against the anti-abuse limit. Invalid form corrections and duplicate network retries do not consume the limit.
 
 A new deployment also clears any old in-memory rate-limit bucket from earlier versions.
+
+
+## v1.0.12 admin schema repair
+
+Run `supabase/repair-v1.0.12-admin-schema.sql` if System Health reports missing fields in heroes, hero_actions or events. The final query should return zero rows.

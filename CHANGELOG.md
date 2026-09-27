@@ -1,3 +1,11 @@
+# v1.0.12 – Remaining admin schema repair
+
+- Added a safe Supabase repair for all fields required by `heroes`, `hero_actions`, and `events`.
+- Repairs the exact System Health failures for `heroes.journey_notes`, `hero_actions.value_gbp`, and `events.public_image_url`, plus any other required columns in those tables.
+- Re-applies secure server-side grants, RLS, indexes, and relationship constraints where missing.
+- Forces PostgREST schema refresh after repair.
+- Final SQL verification returns zero rows when the database matches the application.
+
 # v1.0.11 – Public submission rate-limit repair
 
 - Fixed public forms reaching the abuse limit during legitimate corrections, retries and testing.

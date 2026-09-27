@@ -1,6 +1,6 @@
 {
   "name": "project-golden-child",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "private": true,
   "description": "Project Golden Child public website and secure administration system",
   "engines": {
