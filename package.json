@@ -1,9 +1,11 @@
 {
   "name": "project-golden-child",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "description": "Project Golden Child public website and secure administration system",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",

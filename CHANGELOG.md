@@ -1,3 +1,13 @@
+# v1.0.9 – Submission reliability and Supabase Data API repair
+
+- Fixed the main production submission failure for new Supabase projects by explicitly granting the server-side `service_role` Data API permissions.
+- Added an idempotent database repair script that adds missing public-form columns without deleting existing records.
+- Added database request timeout/retry handling for transient Supabase/API failures.
+- Added idempotent client submission IDs so an automatic retry does not create duplicate referrals, messages or Go Gold registrations.
+- Added a secure admin-only System Health check for all required database tables.
+- Public errors now include a short support reference that can be matched to Vercel logs without exposing database details.
+- Audit logging and notification email failures no longer block a successfully saved public submission.
+
 # v1.0.8 – Admin JSON compatibility fix
 
 - Fixed a Windows PowerShell setup issue where a single administrator could be written to `ADMIN_USERS_JSON` as a JSON object instead of a one-item JSON array.

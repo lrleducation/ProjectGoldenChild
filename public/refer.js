@@ -77,9 +77,7 @@
     }
     submit.disabled = true;
     try {
-      const r = await fetch('/api/referrals', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.message || 'We could not save the registration.');
+      const data = await window.PGCSubmission.post('/api/referrals', payload, {retries:1});
       sections.forEach(s => s.hidden = true);
       form.querySelector('.form-actions').hidden = true;
       service.hidden = false;

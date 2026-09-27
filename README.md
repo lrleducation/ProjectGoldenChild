@@ -77,3 +77,10 @@ For Vercel, use:
 `SUPABASE_SERVICE_ROLE_KEY` remains supported as a legacy fallback, but is no longer preferred.
 
 Do not use the publishable key for the private server-side database connection in this project.
+
+
+## v1.0.9 submission repair
+
+If referrals, contact forms or Go Gold submissions return a secure-save error, run `supabase/repair-v1.0.9-submission-pipeline.sql` in the Supabase SQL Editor, then redeploy. The migration is designed to be safe to run repeatedly and does not delete existing records.
+
+The admin dashboard now includes a **System health** check. A healthy production setup reports all required tables as OK.

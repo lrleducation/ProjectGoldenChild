@@ -19,7 +19,7 @@
     if(!r.ok) throw new Error(data.message||`Request failed (${r.status})`); return data;
   };
   const showLogin=()=>{$('#admin-login').hidden=false;$('#admin-app').hidden=true;};
-  const showApp=user=>{$('#admin-login').hidden=true;$('#admin-app').hidden=false;$('#admin-user').textContent=`${user.name} · ${user.role}`;loadSummary();};
+  const showApp=user=>{$('#admin-login').hidden=true;$('#admin-app').hidden=false;$('#admin-user').textContent=`${user.name} · ${user.role}`;loadSummary();loadDiagnostics();};
   const message=(el,msg)=>{el.hidden=false;el.textContent=msg;};
 
   async function boot(){
@@ -38,6 +38,15 @@
     const key=btn.dataset.adminSection; if(key==='dashboard')loadSummary(); if(key==='referrals')loadReferrals(); if(key==='heroes')loadHeroes(); if(key==='events')loadEvents(); if(key==='go-gold')loadGoGold(); if(key==='contacts')loadContacts();
   }));
   $$('[data-refresh]').forEach(b=>b.addEventListener('click',()=>({referrals:loadReferrals,heroes:loadHeroes,events:loadEvents,'go-gold':loadGoGold,contacts:loadContacts}[b.dataset.refresh]?.())));
+
+
+  async function loadDiagnostics(){
+    const text=$('#system-health-text'), detail=$('#system-health-detail');
+    if(!text)return;
+    text.textContent='Checking database access…'; if(detail)detail.textContent='';
+    try{const d=await api('/api/admin-diagnostics'); text.textContent=d.ok?'All submission tables are connected and reachable.':'One or more submission tables need attention.'; text.style.color=d.ok?'#17633b':'#9d1d12'; if(detail)detail.textContent=Object.entries(d.checks||{}).map(([k,v])=>`${k}: ${v.ok?'OK':`${v.code||v.status||'error'} ${v.detail||''}`}`).join(' · ');}catch(err){text.textContent='Database check failed.';text.style.color='#9d1d12';if(detail)detail.textContent=err.message;}
+  }
+  $('#check-system-health')?.addEventListener('click',loadDiagnostics);
 
   async function loadSummary(){
     try{const d=await api('/api/admin-summary'); $('#sum-heroes').textContent=d.heroes;$('#sum-referrals').textContent=d.referrals;$('#sum-events').textContent=d.events;$('#sum-gold').textContent=d.gold;$('#sum-actions').textContent=d.actions;$('#ref-count').textContent=d.referrals?`(${d.referrals})`:'';}catch(err){console.error(err);}

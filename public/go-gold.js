@@ -17,6 +17,6 @@
       updates: fd.get('updates') === 'on'
     };
     const btn=form.querySelector('button[type="submit"]'); if(btn)btn.disabled=true;
-    try{const r=await fetch('/api/go-gold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json();if(!r.ok)throw new Error(data.message||'Could not save your registration.');form.reset();show('Thank you. We have recorded your interest in Go Gold.',true);}catch(err){show(err.message||'Could not save your registration.');}finally{if(btn)btn.disabled=false;}
+    try{const data=await window.PGCSubmission.post('/api/go-gold',payload,{retries:1});form.reset();show('Thank you. We have recorded your interest in Go Gold.',true);}catch(err){show(err.message||'Could not save your registration.');}finally{if(btn)btn.disabled=false;}
   });
 })();

@@ -170,3 +170,11 @@ alter table public.audit_log enable row level security;
 -- No anon/authenticated policies are intentionally created.
 -- The public browser never talks directly to these tables.
 -- Server-side Vercel functions use the Supabase service-role key and bypass RLS.
+
+
+-- Explicit Data API grants for server-side secret/service-role access.
+-- New Supabase projects no longer automatically grant these privileges.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on table public.referrals, public.heroes, public.hero_actions, public.events, public.event_gallery, public.go_gold_registrations, public.contacts, public.audit_log to service_role;
+revoke all on table public.referrals, public.heroes, public.hero_actions, public.events, public.event_gallery, public.go_gold_registrations, public.contacts, public.audit_log from anon, authenticated;
+notify pgrst, 'reload schema';
