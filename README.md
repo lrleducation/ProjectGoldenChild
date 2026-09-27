@@ -51,3 +51,11 @@ Local data is saved to `.data/project-golden-child.json`. Use dummy data only.
 ## Production
 
 See `docs/DEPLOYMENT.md` and `docs/LAUNCH_CHECKLIST.md` before accepting real family information.
+
+
+## Supabase v1.0.4 note
+
+If the v1.0.3 schema failed with `event_gallery_event_id_fkey` because `events.id` is `text`,
+run `supabase/fix-v1.0.3-existing-database.sql` in the Supabase SQL Editor. Do not drop the
+existing `events` table merely to change its ID type. For a new Supabase project, run the
+updated `supabase/schema.sql`.

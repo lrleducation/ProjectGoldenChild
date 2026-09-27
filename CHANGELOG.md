@@ -1,3 +1,10 @@
+# v1.0.4 – Supabase compatibility fix
+
+- Fixed `event_gallery_event_id_fkey` deployment failure where an existing `events.id` column is `text`.
+- Standardised new schema IDs and relationship IDs as text containing UUID-formatted values.
+- Added `supabase/fix-v1.0.3-existing-database.sql` for databases where the v1.0.3 schema stopped at `event_gallery`.
+- No public or admin workflow changes.
+
 # Changelog
 
 ## v1.0.3
