@@ -1,0 +1,1 @@
+import {baseUrl} from '../lib/config.mjs';export default async function handler(req,res){res.statusCode=200;res.setHeader('Content-Type','text/plain; charset=utf-8');res.end(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/admin/\nSitemap: ${baseUrl}/sitemap.xml\n`)}

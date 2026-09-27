@@ -1,0 +1,14 @@
+{
+  "name": "project-golden-child",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "admin:user": "node scripts/generate-admin.mjs"
+  }
+}

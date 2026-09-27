@@ -1,0 +1,20 @@
+<svg width="240" height="340" viewBox="0 0 240 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="27" y1="19" x2="220" y2="319" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8DF8A"/>
+      <stop offset="0.34" stop-color="#D9AA3A"/>
+      <stop offset="0.7" stop-color="#B98216"/>
+      <stop offset="1" stop-color="#F0C95B"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#6A4810" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M111 16C77 37 59 70 62 105C66 144 91 179 115 205L81 318L124 292L149 323L169 211C195 180 217 143 218 103C218 57 182 22 143 17C131 15 120 14 111 16Z" fill="url(#gold)"/>
+    <path d="M116 17C141 50 163 83 166 112C168 137 155 163 135 190L112 216C83 185 62 149 62 109C62 75 78 42 108 20C111 18 114 17 116 17Z" fill="#EFC75A" fill-opacity="0.92"/>
+    <path d="M142 18C172 22 199 43 212 72C199 78 184 88 170 103C159 83 143 55 122 26C130 20 136 18 142 18Z" fill="#C99628" fill-opacity="0.62"/>
+    <path d="M118 204L81 318L124 292L149 323L169 211L149 188L118 204Z" fill="url(#gold)"/>
+    <path d="M117 205L84 307L124 285L145 310L161 216L144 198L117 205Z" fill="#E2B440" fill-opacity="0.55"/>
+  </g>
+</svg>

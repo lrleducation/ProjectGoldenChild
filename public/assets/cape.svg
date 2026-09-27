@@ -1,0 +1,21 @@
+<svg width="520" height="480" viewBox="0 0 520 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="capeGold" x1="113" y1="63" x2="410" y2="425" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9E494"/>
+      <stop offset="0.38" stop-color="#DEB145"/>
+      <stop offset="0.72" stop-color="#BF8920"/>
+      <stop offset="1" stop-color="#F0C862"/>
+    </linearGradient>
+    <filter id="capeShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#231D12" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#capeShadow)">
+    <path d="M171 74C193 53 224 43 260 43C295 43 325 53 348 74L391 103L357 128C370 176 390 235 432 319C369 359 314 388 260 425C207 388 151 359 88 319C129 235 150 176 163 128L129 103L171 74Z" fill="url(#capeGold)"/>
+    <path d="M173 77C199 95 230 104 260 104C290 104 321 95 347 77L389 104L356 128C316 143 203 143 164 128L131 104L173 77Z" fill="#F4D675"/>
+    <path d="M163 128C187 139 218 145 260 145C302 145 333 139 357 128C368 182 390 242 432 319C387 348 339 372 293 403C281 411 270 419 260 425C251 419 240 412 227 403C181 372 133 348 88 319C130 242 152 182 163 128Z" fill="url(#capeGold)"/>
+    <path d="M172 145C190 175 191 222 172 287C206 310 236 332 260 354C285 332 315 310 348 287C330 222 330 175 348 145C300 153 220 153 172 145Z" fill="#DCA73C" fill-opacity="0.37"/>
+    <path d="M215 201L260 175L305 201V253L260 281L215 253V201Z" fill="#FFF9E8" stroke="#8B651E" stroke-width="4"/>
+    <text x="260" y="241" text-anchor="middle" fill="#2F3B42" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800" letter-spacing="-3">HH</text>
+  </g>
+</svg>
