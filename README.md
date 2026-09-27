@@ -1,76 +1,38 @@
-# Project Golden Child v1.0.1
+# Project Golden Child redesign starter
 
-This update corrects Vercel routing for all clean public page URLs and replaces the original flat ribbon artwork with a more realistic gold childhood-cancer awareness ribbon across the site.
+This is a Next.js App Router starter matching the approved gold/cream Project Golden Child direction.
 
-Production-oriented first version of the Project Golden Child website and private administration system.
-
-## What is included
-
-Public pages for Home, Our Story, Harper's Heroes, Events, Go Gold, secure registration/referral with separately recorded health-data consent, privacy/safeguarding and contact. The private `/admin` area includes dashboard metrics, referrals, the Harper's Heroes register with recognition/contact actions, event creation/publishing/archiving, approved image uploads and galleries, dictated event notes, AI-assisted event-story drafting, Go Gold registrations and website messages.
-
-The childhood cancer gold ribbon is used throughout the public identity. The Harper's Heroes page uses the gold HH cape asset in `public/assets/cape.svg`.
-
-## Local development
-
-Requires Node 22 or newer. There are no runtime npm dependencies.
+## Run locally
 
 ```bash
+npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open http://localhost:3000
 
-For local development only, the admin login is:
+Admin visual shell: http://localhost:3000/admin
 
-- Email: `admin@local.test`
-- Password: `GoldenChildLocal!2026`
-- TOTP: leave blank
+## Use this with your existing site
 
-Local data is stored in `.data/project-golden-child.db`. Never use the local development database for real family information.
+The quickest implementation path is:
 
-## Production database
+1. Copy `public/project-golden-child-logo.png` into your existing site's `public` folder.
+2. Replace your homepage with `app/page.tsx`.
+3. Copy `components/SiteHeader.tsx`.
+4. Merge the styles from `app/globals.css` into your existing global stylesheet.
+5. If your site already has working forms/database/admin routes, keep that backend and wire its data into the visual admin shell. Do not replace a working backend with the placeholder admin content in this starter.
 
-1. Create a dedicated Supabase project.
-2. Run `supabase/schema.sql` in the SQL editor.
-3. Create a public storage bucket named `event-public`. This bucket is for photographs that have already been cleared for public use only.
-4. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as server-side deployment secrets.
+## Logo
 
-Do not expose the service-role key in public JavaScript or a browser environment variable.
+All front-end logo instances read from:
 
-## Production admin accounts
+`/public/project-golden-child-logo.png`
 
-Generate a password hash and TOTP secret:
+Replacing that one file updates the logo throughout this starter.
 
-```bash
-npm run admin:user -- adam@example.com "A very strong unique password" "Adam" director
-```
+## Important
 
-Run the command once for each named administrator. Put the generated objects into a JSON array and store it as the `ADMIN_USERS_JSON` hosting secret. Each administrator adds their generated TOTP secret to an authenticator app.
+The admin upload control in this starter is deliberately disabled. A visual upload button is not a real storage system. Wire it to your existing storage/database/API before enabling it.
 
-Also set a long random `SESSION_SECRET`.
-
-## Email
-
-The site can use Resend through its HTTP API without an SDK. Set:
-
-- `RESEND_API_KEY`
-- `FROM_EMAIL`
-- `NOTIFICATION_EMAIL`
-
-Referral notification emails contain a reference only, not the child's diagnosis or medical details.
-
-## AI event drafting
-
-If `OPENAI_API_KEY` is configured, the event editor can generate a first draft from typed or dictated notes. If it is not configured, a structured non-AI draft is still produced so the workflow remains usable. AI text is never published automatically.
-
-v1 intentionally does not send event photographs to an AI model. The gallery is functional, but image-analysis automation should only be enabled after a specific data-protection assessment.
-
-## Vercel deployment
-
-This project is structured for Vercel: static pages live under `public/`, server functions under `api/`, and `vercel.json` provides clean routes and security headers.
-
-Set all production environment variables from `.env.example`, deploy a preview, run the launch tests, then attach the chosen domain in Vercel Project Settings > Domains. Set `PUBLIC_BASE_URL` to the final `https://` domain before production launch so the sitemap uses the correct address.
-
-## Before real family data is accepted
-
-Read `docs/DEPLOYMENT.md`, `docs/LAUNCH_CHECKLIST.md`, `docs/DPIA_STARTER.md` and `docs/SECURITY_MODEL.md`. The application is designed to fail closed in production if the secure database/authentication configuration is missing.
+The public story cards intentionally contain no invented children, medical histories or photographs. Replace these with family-approved material only.
