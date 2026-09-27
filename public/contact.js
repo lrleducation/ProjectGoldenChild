@@ -21,7 +21,7 @@
     const button = form.querySelector('button[type="submit"]');
     if (button) button.disabled = true;
     try {
-      const data = await window.PGCSubmission.post('/api/contact', payload, {retries:1});
+      const data = await window.PGCSubmission.post('/api/contact', payload, {retries:2,submissionKey:'contact'});
       form.reset(); show('Thank you. Your message has been sent to Project Golden Child.', true);
     } catch (err) { show(err.message || 'Could not send your message.'); }
     finally { if (button) button.disabled = false; }

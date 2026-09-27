@@ -77,7 +77,7 @@
     }
     submit.disabled = true;
     try {
-      const data = await window.PGCSubmission.post('/api/referrals', payload, {retries:1});
+      const data = await window.PGCSubmission.post('/api/referrals', payload, {retries:2,submissionKey:`referral:${route}`});
       sections.forEach(s => s.hidden = true);
       form.querySelector('.form-actions').hidden = true;
       service.hidden = false;

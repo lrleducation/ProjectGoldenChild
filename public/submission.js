@@ -1,32 +1,86 @@
 window.PGCSubmission = (() => {
-  const makeId = () => (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const makeId = () =>
+    (globalThis.crypto?.randomUUID
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`);
 
-  async function post(url, payload, { retries=1 }={}) {
-    payload.submission_id = payload.submission_id || makeId();
+  const sleep = ms => new Promise(resolve => setTimeout(resolve,ms));
+
+  function storageKey(url, submissionKey='') {
+    return `pgc:submission:${submissionKey || url}`;
+  }
+
+  function getSubmissionId(url, submissionKey='') {
+    const key = storageKey(url,submissionKey);
+    try {
+      const existing = sessionStorage.getItem(key);
+      if(existing) return existing;
+      const id = makeId();
+      sessionStorage.setItem(key,id);
+      return id;
+    } catch {
+      return makeId();
+    }
+  }
+
+  function clearSubmissionId(url, submissionKey='') {
+    try { sessionStorage.removeItem(storageKey(url,submissionKey)); } catch {}
+  }
+
+  async function post(url,payload,{retries=2,submissionKey=''}={}) {
+    payload.submission_id = payload.submission_id || getSubmissionId(url,submissionKey);
+
     let lastError;
-    for (let attempt=0; attempt<=retries; attempt++) {
+
+    for(let attempt=0; attempt<=retries; attempt++) {
       try {
         const controller = new AbortController();
-        const timer = setTimeout(()=>controller.abort(),12000);
-        const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+        const timer = setTimeout(() => controller.abort(),15000);
+
+        const response = await fetch(url,{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            Accept:'application/json'
+          },
+          body:JSON.stringify(payload),
+          signal:controller.signal
+        });
+
         clearTimeout(timer);
-        let data={};
-        const text=await r.text();
-        if(text){try{data=JSON.parse(text);}catch{data={message:text};}}
-        if(r.ok) return data;
-        const err=new Error(data.message||`Request failed (${r.status}).`); err.status=r.status; lastError=err;
-        // Retry only genuinely transient transport/server failures.
-        // Never auto-retry HTTP 429: retrying immediately only extends the
-        // rate-limit problem and can create a poor experience for families.
-        if(![408,425,500,502,503,504].includes(r.status) || attempt===retries) throw err;
+
+        const raw = await response.text();
+        let data = {};
+
+        if(raw) {
+          try { data = JSON.parse(raw); }
+          catch { data = { message:raw }; }
+        }
+
+        if(response.ok) {
+          clearSubmissionId(url,submissionKey);
+          return data;
+        }
+
+        const err = new Error(data.message || `Request failed (${response.status}).`);
+        err.status = response.status;
+        lastError = err;
+
+        // Do not immediately retry validation, authentication or rate-limit
+        // responses. Only retry genuinely transient server/network failures.
+        if(![408,425,500,502,503,504].includes(response.status) || attempt === retries) {
+          throw err;
+        }
       } catch(err) {
-        lastError=err;
-        if(attempt===retries) throw err;
+        lastError = err;
+        if(attempt === retries) throw err;
       }
-      await sleep(700);
+
+      await sleep(800 * (attempt + 1));
     }
+
     throw lastError || new Error('Submission failed.');
   }
+
   return { post, makeId };
 })();

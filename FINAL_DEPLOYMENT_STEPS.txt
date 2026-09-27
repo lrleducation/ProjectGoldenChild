@@ -1,0 +1,57 @@
+PROJECT GOLDEN CHILD — FINAL v2.0.0 DEPLOYMENT
+
+This release ends the previous incremental database repairs.
+
+WHY THIS IS DIFFERENT
+The live application now uses a new, clean set of canonical Supabase tables:
+  pgc_referrals
+  pgc_heroes
+  pgc_hero_actions
+  pgc_events
+  pgc_event_gallery
+  pgc_go_gold_registrations
+  pgc_contacts
+  pgc_audit_log
+  pgc_healthcheck
+  pgc_schema_meta
+
+The old tables are left untouched and are no longer used by v2.0.0.
+
+DEPLOYMENT ORDER
+1. In Supabase SQL Editor, run:
+   supabase/FINAL_SUPABASE_SETUP_v2.sql
+
+2. The final SQL query must return ZERO ROWS.
+
+3. Replace the website code in the existing GitHub repository with this v2.0.0 package.
+   Keep the hidden .git folder.
+
+4. GitHub Desktop:
+   Commit message: Project Golden Child v2.0.0 final database rebuild
+   Commit to main
+   Push origin
+
+5. Wait for Vercel to show the deployment as Ready.
+
+6. Sign in to /admin.
+
+7. Dashboard → System Health → Check now.
+
+EXPECTED RESULT
+  Database ready — schema 2.0.0. Read and write checks passed.
+
+Every table should show OK and the write test should show OK.
+
+8. Only then submit:
+   - one fictional parent/carer registration
+   - one fictional third-party referral
+   - one fictional contact form
+   - one fictional Go Gold registration
+
+9. Confirm each appears immediately in Admin.
+
+IMPORTANT
+- Do not delete the old Supabase tables yet. They are retained as a safety archive.
+- v2.0.0 uses only pgc_* tables.
+- SUPABASE_SECRET_KEY remains server-side in Vercel only.
+- PUBLIC_BASE_URL, SESSION_SECRET, ADMIN_USERS_JSON and PGC_LOCAL_DEV remain unchanged.

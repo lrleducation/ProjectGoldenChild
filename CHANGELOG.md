@@ -1,3 +1,20 @@
+# v2.0.0 — Final canonical database rebuild
+
+- Replaced dependency on legacy Supabase tables with clean canonical `pgc_*` tables.
+- Added a single final Supabase setup SQL that creates the complete schema, indexes, RLS, grants, Storage bucket and schema metadata.
+- Old tables are retained untouched as a safety archive.
+- Added best-effort legacy data copy without deleting old records.
+- Added real Data API write/read/delete System Health smoke testing.
+- System Health now requires schema version `2.0.0`.
+- Reworked all database access through a logical-to-physical table map.
+- Made all inserts idempotent at database-request level using fixed IDs and `resolution=ignore-duplicates`.
+- Persisted public submission IDs in sessionStorage across manual retries.
+- Public submissions are verified by an immediate read-back before success is shown.
+- Increased legitimate public form tolerance while retaining honeypot, validation and rate-limit protection.
+- Fixed nullable timestamp handling in referral administration.
+- Retained support for Supabase `sb_secret_*` server-side keys.
+- Retained secure admin login, TOTP, audit logging and optional email alerts.
+
 # v1.0.12 – Remaining admin schema repair
 
 - Added a safe Supabase repair for all fields required by `heroes`, `hero_actions`, and `events`.

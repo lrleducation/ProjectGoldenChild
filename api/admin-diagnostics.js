@@ -1,6 +1,6 @@
-const {json}=require('../lib/http');
-const {requireAdmin}=require('../lib/security');
-const store=require('../lib/store');
+const { json } = require('../lib/http');
+const { requireAdmin } = require('../lib/security');
+const store = require('../lib/store');
 
 const REQUIRED_COLUMNS = {
   referrals: [
@@ -36,23 +36,37 @@ const REQUIRED_COLUMNS = {
   audit_log: ['id','actor_email','action','entity_type','entity_id','detail','created_at','updated_at']
 };
 
-module.exports=async function(req,res){
-  if(req.method!=='GET') return json(res,405,{message:'Method not allowed.'});
+module.exports = async function(req,res){
+  if(req.method !== 'GET') return json(res,405,{message:'Method not allowed.'});
   if(!requireAdmin(req,res)) return;
 
-  const checks={};
-  for(const [table,columns] of Object.entries(REQUIRED_COLUMNS)){
-    checks[table]=await store.probe(table,columns);
+  const checks = {};
+
+  for (const [table,columns] of Object.entries(REQUIRED_COLUMNS)) {
+    checks[table] = await store.probe(table,columns);
   }
 
-  const ok=Object.values(checks).every(x=>x.ok);
+  const write = await store.writeProbe();
+  const version = await store.schemaVersion();
+  const tableReadOk = Object.values(checks).every(result => result.ok);
+  const ok = tableReadOk && write.ok && version === '2.0.0';
+
   return json(res,200,{
     ok,
+    schemaVersion:version,
     checks,
+    write,
+    physicalTables:store.TABLE_MAP,
     configuration:{
       databaseConfigured:store.configured(),
-      keyType:String(process.env.SUPABASE_SECRET_KEY||'').trim().startsWith('sb_secret_')?'secret':'legacy-or-missing',
-      emailConfigured:Boolean(process.env.RESEND_API_KEY&&process.env.FROM_EMAIL&&process.env.NOTIFICATION_EMAIL)
+      keyType:String(process.env.SUPABASE_SECRET_KEY || '').trim().startsWith('sb_secret_')
+        ? 'secret'
+        : 'legacy-or-missing',
+      emailConfigured:Boolean(
+        process.env.RESEND_API_KEY &&
+        process.env.FROM_EMAIL &&
+        process.env.NOTIFICATION_EMAIL
+      )
     }
   });
 };

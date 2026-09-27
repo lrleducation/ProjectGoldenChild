@@ -46,11 +46,11 @@
     text.textContent='Checking database access…'; if(detail)detail.textContent='';
     try{
       const d=await api('/api/admin-diagnostics');
-      text.textContent=d.ok?'All submission tables and required fields are ready.':'One or more database fields need attention before public submissions can be accepted.';
+      text.textContent=d.ok?`Database ready — schema ${d.schemaVersion}. Read and write checks passed.`:'Database setup is incomplete. Public submissions should not be opened until every check passes.';
       text.style.color=d.ok?'#17633b':'#9d1d12';
       if(detail){
         const checks=Object.entries(d.checks||{}).map(([k,v])=>`${k}: ${v.ok?'OK':`${v.code||v.status||'error'} ${v.detail||''}`}`);
-        checks.push(`email alerts: ${d.configuration?.emailConfigured?'configured':'not configured (database submissions still work)'}`);
+        checks.push(`write test: ${d.write?.ok?'OK':`${d.write?.code||d.write?.status||'error'} ${d.write?.detail||''}`}`); checks.push(`email alerts: ${d.configuration?.emailConfigured?'configured':'not configured (database submissions still save)'}`);
         detail.textContent=checks.join(' · ');
       }
     }catch(err){text.textContent='Database check failed.';text.style.color='#9d1d12';if(detail)detail.textContent=err.message;}

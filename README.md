@@ -1,3 +1,20 @@
+# Project Golden Child v2.0.0
+
+This is the final canonical rebuild of the Project Golden Child website/database integration.
+
+## Database contract
+
+v2.0.0 deliberately uses versioned `pgc_*` Supabase tables and no longer depends on the earlier legacy tables. This removes schema drift caused by incremental early-development migrations.
+
+Run `supabase/FINAL_SUPABASE_SETUP_v2.sql` before deploying v2.0.0.
+
+The admin System Health check now verifies:
+- every required application column,
+- the canonical schema version (`2.0.0`),
+- and a real server-side write/read/delete smoke test.
+
+Public submissions use stable submission IDs stored in the browser session and idempotent database inserts, so retrying a request cannot create a second copy.
+
 # Project Golden Child v1.0.3 — full repository
 
 This is the complete GitHub/Vercel package, not an overlay or hotfix. It combines the approved Project Golden Child gold cape/PGC branding with the public website, working forms, private administration area, local development server, production Supabase schema and deployment documentation.
@@ -110,3 +127,4 @@ A new deployment also clears any old in-memory rate-limit bucket from earlier ve
 ## v1.0.12 admin schema repair
 
 Run `supabase/repair-v1.0.12-admin-schema.sql` if System Health reports missing fields in heroes, hero_actions or events. The final query should return zero rows.
+
