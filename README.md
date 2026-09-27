@@ -1,38 +1,67 @@
-# Project Golden Child redesign starter
+# Project Golden Child v1.0.2 — brand redesign hotfix
 
-This is a Next.js App Router starter matching the approved gold/cream Project Golden Child direction.
+This package applies the approved Project Golden Child gold superhero-cape identity to the existing v1.0.1 site.
 
-## Run locally
+## What this update changes
 
-```bash
-npm install
-npm run dev
-```
+- Installs the approved Project Golden Child logo.
+- Adds a transparent full logo and cape mark.
+- Redesigns the public site in the gold/cream visual style.
+- Updates the home-page hero to: “Making childhood cancer impossible to ignore.”
+- Replaces the missing `cape.svg` reference on Harper’s Heroes with the approved cape mark.
+- Rebrands the private admin screen in the same visual identity.
+- Adds a clear admin dashboard guide explaining where public form submissions appear.
 
-Open http://localhost:3000
+## Where submissions appear in the existing admin system
 
-Admin visual shell: http://localhost:3000/admin
+Go to `/admin`.
 
-## Use this with your existing site
+- `Refer a child` submissions → **Referrals**
+- Approved/converted child records → **Harper's Heroes**
+- Go Gold registrations → **Go Gold 2027**
+- General website contact forms → **Messages**
+- Events are managed under **Events**
 
-The quickest implementation path is:
+The login credentials and production authentication model remain those described in the original v1.0.1 README.
 
-1. Copy `public/project-golden-child-logo.png` into your existing site's `public` folder.
-2. Replace your homepage with `app/page.tsx`.
-3. Copy `components/SiteHeader.tsx`.
-4. Merge the styles from `app/globals.css` into your existing global stylesheet.
-5. If your site already has working forms/database/admin routes, keep that backend and wire its data into the visual admin shell. Do not replace a working backend with the placeholder admin content in this starter.
+## Important: this uploaded v1.0.1-hotfix was not a complete repository
 
-## Logo
+The source ZIP supplied for this update contains the HTML pages and `vercel.json`, but it does **not** contain the JavaScript, API functions, database code, package files, documentation or the existing CSS files referred to in its own README.
 
-All front-end logo instances read from:
+For that reason this v1.0.2 package is deliberately a **front-end overlay/hotfix**. It does not replace, invent or disable the secure forms/database/admin back end.
 
-`/public/project-golden-child-logo.png`
+Apply this package over the complete Project Golden Child repository so that the existing files such as:
 
-Replacing that one file updates the logo throughout this starter.
+- `/public/site.js`
+- `/public/refer.js`
+- `/public/contact.js`
+- `/public/events.js`
+- `/public/go-gold.js`
+- `/public/admin/admin.js`
+- `/api/...`
+- Supabase/database files
 
-## Important
+remain in place.
 
-The admin upload control in this starter is deliberately disabled. A visual upload button is not a real storage system. Wire it to your existing storage/database/API before enabling it.
+## Files added or replaced by this hotfix
 
-The public story cards intentionally contain no invented children, medical histories or photographs. Replace these with family-approved material only.
+- `public/*.html`
+- `public/admin/index.html`
+- `public/styles.css`
+- `public/admin/admin.css`
+- `public/assets/project-golden-child-logo.png`
+- `public/assets/project-golden-child-mark.png`
+- `public/assets/pgc-favicon.png`
+- `vercel.json`
+- `README.md`
+
+## Deployment
+
+1. Back up the current complete repository.
+2. Extract this hotfix over the repository root.
+3. Keep all existing JavaScript/API/database files that are not present in this hotfix.
+4. Commit and push to GitHub.
+5. Allow Vercel to create a preview deployment.
+6. Test every public form and `/admin` before promoting the deployment to production.
+
+Do not accept real family/health information until the production database, administrator authentication and privacy controls from the full repository are configured.
