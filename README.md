@@ -59,3 +59,21 @@ If the v1.0.3 schema failed with `event_gallery_event_id_fkey` because `events.i
 run `supabase/fix-v1.0.3-existing-database.sql` in the Supabase SQL Editor. Do not drop the
 existing `events` table merely to change its ID type. For a new Supabase project, run the
 updated `supabase/schema.sql`.
+
+
+## v1.0.5 – Supabase new API key support
+
+Supabase now recommends `sb_secret_...` keys instead of legacy `service_role` JWT keys.
+
+For Vercel, use:
+
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY` = the secret key shown under **Settings → API Keys → Secret keys**
+- `ADMIN_USERS_JSON`
+- `SESSION_SECRET`
+- `PUBLIC_BASE_URL`
+- `PGC_LOCAL_DEV=0`
+
+`SUPABASE_SERVICE_ROLE_KEY` remains supported as a legacy fallback, but is no longer preferred.
+
+Do not use the publishable key for the private server-side database connection in this project.

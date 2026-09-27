@@ -1,3 +1,19 @@
+# v1.0.6 – Easy Windows admin setup
+
+- Added `SETUP_ADMIN_WINDOWS.bat` for a guided administrator setup.
+- Password entry is hidden while typed.
+- Automatically generates `ADMIN_USERS_JSON`, `SESSION_SECRET`, TOTP authenticator secret and URI.
+- Writes the values to a temporary local `PGC-VERCEL-SETUP.txt`.
+- Added the generated setup file to `.gitignore` so it is not committed accidentally.
+
+# v1.0.5 – New Supabase API key support
+
+- Added first-class support for Supabase `sb_secret_...` keys.
+- Added `SUPABASE_SECRET_KEY` as the preferred server-side environment variable.
+- Kept `SUPABASE_SERVICE_ROLE_KEY` as a legacy fallback.
+- Removed invalid Bearer-token use for opaque `sb_secret_...` keys.
+- Updated Storage uploads to support new Supabase secret keys correctly.
+
 # v1.0.4 – Supabase compatibility fix
 
 - Fixed `event_gallery_event_id_fkey` deployment failure where an existing `events.id` column is `text`.

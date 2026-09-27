@@ -1,0 +1,20 @@
+PROJECT GOLDEN CHILD — EASY ADMIN SETUP
+
+You do not need to type Node commands manually.
+
+WINDOWS
+1. Extract the full website ZIP.
+2. Open the extracted Project Golden Child folder.
+3. Double-click SETUP_ADMIN_WINDOWS.bat.
+4. Windows will ask for:
+   - your admin email
+   - your name
+   - your role
+   - the password you want to use
+5. When it finishes, open PGC-VERCEL-SETUP.txt.
+6. Copy ADMIN_USERS_JSON from that file into Vercel.
+7. Copy SESSION_SECRET from that file into Vercel.
+8. Add the Authenticator Setup Secret to Microsoft Authenticator or Google Authenticator.
+9. Delete PGC-VERCEL-SETUP.txt after everything is working.
+
+The setup text file is excluded from Git and must never be committed.
