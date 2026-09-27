@@ -1,0 +1,1 @@
+const {json}=require('../lib/http'); const {clearSessionCookie}=require('../lib/security'); module.exports=async function(req,res){ if(req.method!=='POST') return json(res,405,{message:'Method not allowed.'}); clearSessionCookie(res); return json(res,200,{ok:true}); };

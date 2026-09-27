@@ -1,2 +1,22 @@
-const goldForm=document.querySelector('#go-gold-form');
-if(goldForm)goldForm.addEventListener('submit',async e=>{e.preventDefault();const btn=goldForm.querySelector('button[type=submit]'),err=document.querySelector('#gold-error');btn.disabled=true;btn.textContent='Sending…';err.hidden=true;const fd=new FormData(goldForm),payload=Object.fromEntries(fd.entries());payload.updates=goldForm.elements.updates.checked;try{const r=await fetch('/api/go-gold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json();if(!r.ok)throw new Error((data.errors||[data.error]).filter(Boolean).join(' '));goldForm.innerHTML=`<div class="success-box dark-success"><div class="success-mark">✓</div><h3 style="color:white">You're on the list.</h3><p>Thank you. We will use these details to keep you informed as Go Gold 2027 develops.</p><p class="small" style="margin-top:12px">Reference: <strong>${data.reference}</strong></p></div>`}catch(ex){err.textContent=ex.message||'We could not save this just now.';err.hidden=false;btn.disabled=false;btn.textContent='Register interest'}});
+(() => {
+  const form = document.querySelector('#go-gold-form');
+  if (!form) return;
+  const error = document.querySelector('#gold-error');
+  const show = (msg, ok=false) => { error.hidden=false; error.textContent=msg; error.classList.toggle('success-box',ok); };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = {
+      website: fd.get('website') || '',
+      organisation_name: fd.get('organisation_name') || '',
+      organisation_type: fd.get('organisation_type') || '',
+      contact_name: fd.get('contact_name') || '',
+      contact_email: fd.get('contact_email') || '',
+      postcode: fd.get('postcode') || '',
+      notes: fd.get('notes') || '',
+      updates: fd.get('updates') === 'on'
+    };
+    const btn=form.querySelector('button[type="submit"]'); if(btn)btn.disabled=true;
+    try{const r=await fetch('/api/go-gold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json();if(!r.ok)throw new Error(data.message||'Could not save your registration.');form.reset();show('Thank you. We have recorded your interest in Go Gold.',true);}catch(err){show(err.message||'Could not save your registration.');}finally{if(btn)btn.disabled=false;}
+  });
+})();

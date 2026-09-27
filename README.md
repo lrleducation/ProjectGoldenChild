@@ -1,67 +1,53 @@
-# Project Golden Child v1.0.2 — brand redesign hotfix
+# Project Golden Child v1.0.3 — full repository
 
-This package applies the approved Project Golden Child gold superhero-cape identity to the existing v1.0.1 site.
+This is the complete GitHub/Vercel package, not an overlay or hotfix. It combines the approved Project Golden Child gold cape/PGC branding with the public website, working forms, private administration area, local development server, production Supabase schema and deployment documentation.
 
-## What this update changes
+## Public routes
 
-- Installs the approved Project Golden Child logo.
-- Adds a transparent full logo and cape mark.
-- Redesigns the public site in the gold/cream visual style.
-- Updates the home-page hero to: “Making childhood cancer impossible to ignore.”
-- Replaces the missing `cape.svg` reference on Harper’s Heroes with the approved cape mark.
-- Rebrands the private admin screen in the same visual identity.
-- Adds a clear admin dashboard guide explaining where public form submissions appear.
+- `/` Home
+- `/our-story`
+- `/harpers-heroes`
+- `/events`
+- `/go-gold`
+- `/refer`
+- `/privacy`
+- `/contact`
 
-## Where submissions appear in the existing admin system
+## Administrator
 
 Go to `/admin`.
 
-- `Refer a child` submissions → **Referrals**
-- Approved/converted child records → **Harper's Heroes**
-- Go Gold registrations → **Go Gold 2027**
-- General website contact forms → **Messages**
-- Events are managed under **Events**
+Local development only:
+- Email: `admin@local.test`
+- Password: `GoldenChildLocal!2026`
+- Authenticator code: leave blank
 
-The login credentials and production authentication model remain those described in the original v1.0.1 README.
+Production uses named administrators from `ADMIN_USERS_JSON` plus an authenticator code. Generate an admin object with:
 
-## Important: this uploaded v1.0.1-hotfix was not a complete repository
+```bash
+npm run admin:user -- adam@example.com "a-strong-unique-password" "Adam" director
+```
 
-The source ZIP supplied for this update contains the HTML pages and `vercel.json`, but it does **not** contain the JavaScript, API functions, database code, package files, documentation or the existing CSS files referred to in its own README.
+## Where submissions appear
 
-For that reason this v1.0.2 package is deliberately a **front-end overlay/hotfix**. It does not replace, invent or disable the secure forms/database/admin back end.
+- Register/refer a child → **Admin > Referrals**
+- A consented parent/carer registration can be promoted → **Admin > Harper's Heroes**
+- Go Gold form → **Admin > Go Gold 2027**
+- Contact form → **Admin > Messages**
+- Public events are managed → **Admin > Events**
 
-Apply this package over the complete Project Golden Child repository so that the existing files such as:
+## Local development
 
-- `/public/site.js`
-- `/public/refer.js`
-- `/public/contact.js`
-- `/public/events.js`
-- `/public/go-gold.js`
-- `/public/admin/admin.js`
-- `/api/...`
-- Supabase/database files
+Node 22+:
 
-remain in place.
+```bash
+npm run dev
+```
 
-## Files added or replaced by this hotfix
+Open `http://localhost:3000`.
 
-- `public/*.html`
-- `public/admin/index.html`
-- `public/styles.css`
-- `public/admin/admin.css`
-- `public/assets/project-golden-child-logo.png`
-- `public/assets/project-golden-child-mark.png`
-- `public/assets/pgc-favicon.png`
-- `vercel.json`
-- `README.md`
+Local data is saved to `.data/project-golden-child.json`. Use dummy data only.
 
-## Deployment
+## Production
 
-1. Back up the current complete repository.
-2. Extract this hotfix over the repository root.
-3. Keep all existing JavaScript/API/database files that are not present in this hotfix.
-4. Commit and push to GitHub.
-5. Allow Vercel to create a preview deployment.
-6. Test every public form and `/admin` before promoting the deployment to production.
-
-Do not accept real family/health information until the production database, administrator authentication and privacy controls from the full repository are configured.
+See `docs/DEPLOYMENT.md` and `docs/LAUNCH_CHECKLIST.md` before accepting real family information.

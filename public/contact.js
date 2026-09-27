@@ -1,1 +1,31 @@
-const cf=document.querySelector('#contact-form');if(cf)cf.addEventListener('submit',async e=>{e.preventDefault();const btn=cf.querySelector('button[type=submit]'),err=document.querySelector('#contact-error');btn.disabled=true;btn.textContent='Sending…';err.hidden=true;const payload=Object.fromEntries(new FormData(cf).entries());try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await r.json();if(!r.ok)throw new Error((data.errors||[data.error]).filter(Boolean).join(' '));cf.innerHTML=`<div class="success-box"><div class="success-mark">✓</div><h2>Message received.</h2><p class="lead" style="margin:18px auto 0">Thank you. We have received your message.</p><p class="small" style="margin-top:14px">Reference: <strong>${data.reference}</strong></p></div>`}catch(ex){err.textContent=ex.message||'We could not send your message.';err.hidden=false;btn.disabled=false;btn.textContent='Send message'}});
+(() => {
+  const form = document.querySelector('#contact-form') || document.querySelector('form');
+  if (!form) return;
+  const error = document.querySelector('#contact-error') || document.querySelector('.error-box');
+  const show = (msg, ok=false) => {
+    if (!error) return;
+    error.hidden = false;
+    error.textContent = msg;
+    error.classList.toggle('success-box', ok);
+  };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const payload = {
+      website: fd.get('website') || '',
+      name: fd.get('name') || document.querySelector('#contact_name')?.value || '',
+      email: fd.get('email') || document.querySelector('#contact_email')?.value || '',
+      subject: fd.get('subject') || document.querySelector('#contact_subject')?.value || '',
+      message: fd.get('message') || document.querySelector('#contact_message')?.value || ''
+    };
+    const button = form.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+    try {
+      const r = await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.message || 'Could not send your message.');
+      form.reset(); show('Thank you. Your message has been sent to Project Golden Child.', true);
+    } catch (err) { show(err.message || 'Could not send your message.'); }
+    finally { if (button) button.disabled = false; }
+  });
+})();

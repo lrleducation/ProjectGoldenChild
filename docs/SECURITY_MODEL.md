@@ -1,25 +1,9 @@
 # Security model
 
-## Public surface
+Public pages never receive the Supabase service-role key and never query private tables directly. Public form submissions go to same-origin serverless functions. Admin data is available only after a signed, HttpOnly, SameSite=Strict session cookie is issued following a named-user password and authenticator-code login.
 
-Static public pages call narrow server APIs. The browser is never given a database service credential. Health information is not exposed through the public events endpoint.
+Production requires Supabase and `SESSION_SECRET`; it fails closed if those settings are missing. Supabase tables have RLS enabled without public policies. Health information is kept in private referral/Hero records and is not automatically published to the events page or any public directory.
 
-## Admin authentication
+The event image bucket is intentionally public because it is only for photographs already approved for website publication. Do not use it for private family images, referral documents or evidence.
 
-Admin accounts are configured server-side. Passwords are stored as scrypt hashes with individual salts. Production accounts use a six-digit TOTP code. Successful sign-in creates a signed HttpOnly, SameSite=Strict session cookie with an eight-hour lifetime.
-
-## Database
-
-Production uses a dedicated Supabase/PostgreSQL project. Sensitive tables have Row Level Security enabled and no public browser policy. Server functions use the service-role credential held in hosting secrets. Local development uses a SQLite database under `.data`, which is excluded from source control and deployment.
-
-## Logging
-
-Application errors log technical messages only. Referral payloads are not written to console output. Admin actions write an audit entry. IP addresses on referrals are one-way hashed before storage.
-
-## Media
-
-Only images explicitly cleared for public website use should be uploaded to the public event bucket. Event attendance does not imply media permission. v1 does not run AI vision over family photographs.
-
-## Fail-closed behaviour
-
-In production, referral/contact/Go Gold write APIs return unavailable if the managed database and admin security settings are incomplete. This prevents a half-configured deployment from silently accepting sensitive information into an inappropriate store.
+The local development login and JSON database are for testing with dummy data only.

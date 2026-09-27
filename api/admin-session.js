@@ -1,0 +1,1 @@
+const {json}=require('../lib/http'); const {getSession}=require('../lib/security'); module.exports=async function(req,res){ if(req.method!=='GET') return json(res,405,{message:'Method not allowed.'}); const user=getSession(req); return json(res,200,{authenticated:Boolean(user),user:user||null,local:process.env.PGC_LOCAL_DEV==='1'}); };

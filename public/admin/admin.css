@@ -234,3 +234,17 @@
   .dashboard-grid,.admin-columns,.admin-guide-grid{grid-template-columns:1fr}
   .admin-top{flex-direction:column}
 }
+.admin-item{padding:20px}
+.admin-item-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
+.admin-item-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:14px 0;border-top:1px solid #eee7dd;border-bottom:1px solid #eee7dd;margin:12px 0}
+.admin-item details{margin:14px 0;padding:12px 14px;border-radius:12px;background:#faf7f2}
+.admin-item summary{cursor:pointer;font-weight:800;color:#6d470d}
+.admin-item-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.status-pill{display:inline-flex;padding:5px 10px;border-radius:999px;background:#f5ead4;color:#704707;font-size:.78rem;font-weight:800;text-transform:capitalize}
+.admin-list-button{width:100%;display:flex;justify-content:space-between;gap:16px;text-align:left;padding:17px 18px;border:1px solid #e6ddd2;border-radius:14px;background:#fff;color:#382517;cursor:pointer}
+.admin-list-button:hover{border-color:#c9932b;background:#fffaf0}
+.admin-list-button span{color:#7b7167;font-size:.82rem}
+.hero-actions-list{display:grid;gap:6px;margin:14px 0}
+.loading-card{padding:24px;color:#71675e;background:#fff;border:1px solid #e6ddd2;border-radius:16px}
+.success-box{background:#edf8ee!important;border-color:#abd5ae!important;color:#28582d!important}
+@media(max-width:760px){.admin-item-grid{grid-template-columns:1fr}.admin-list-button{flex-direction:column}}

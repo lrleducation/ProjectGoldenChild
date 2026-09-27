@@ -1,31 +1,44 @@
-import { json,getClientIp,verifyTurnstile } from '../lib/http.mjs';
-import { bodyObject } from '../lib/request.mjs';
-import { validateReferral } from '../lib/validation.mjs';
-import { createReferral } from '../lib/db.mjs';
-import { hashIp } from '../lib/security.mjs';
-import { turnstileSecret, requireTurnstile, isProduction, productionReady } from '../lib/config.mjs';
-import { sendReferralReceipt, notifyNewReferral } from '../lib/email.mjs';
+const { json, readBody, getIp, cleanText, bool, isEmail } = require('../lib/http');
+const { rateLimit } = require('../lib/rate-limit');
+const store = require('../lib/store');
+const { sendEmail } = require('../lib/email');
+const { audit } = require('../lib/audit');
 
-export default async function handler(req,res){
-  if(req.method!=='POST') return json(res,405,{ok:false,error:'Method not allowed'});
-  if(isProduction && !productionReady()) return json(res,503,{ok:false,error:'Registrations are temporarily unavailable while secure services are being configured.'});
-  const input=bodyObject(req);
-  if(input.website) return json(res,200,{ok:true,reference:'received'}); // honeypot
-  const started=Number(input.form_started_at||0);
-  if(started && Date.now()-started<2500) return json(res,400,{ok:false,error:'Please check the form and try again.'});
-  const ip=getClientIp(req);
-  if(requireTurnstile){
-    const pass=await verifyTurnstile(input.turnstile_token,ip,turnstileSecret);
-    if(!pass) return json(res,400,{ok:false,error:'We could not verify this submission. Please refresh and try again.'});
-  }
-  const checked=validateReferral(input);
-  if(!checked.ok) return json(res,422,{ok:false,error:'Please check the highlighted information.',errors:checked.errors});
+module.exports = async function handler(req,res){
+  if(req.method!=='POST') return json(res,405,{message:'Method not allowed.'});
+  const rl=rateLimit(`referral:${getIp(req)}`,{limit:8}); if(!rl.ok) return json(res,429,{message:'Too many submissions. Please try again later.'});
   try{
-    const referral=await createReferral(checked.data,hashIp(ip));
-    await Promise.allSettled([sendReferralReceipt(referral),notifyNewReferral(referral)]);
-    return json(res,201,{ok:true,reference:referral.id});
-  }catch(err){
-    console.error('Referral save failed:',err?.message); // never log submitted data
-    return json(res,500,{ok:false,error:'We could not save this submission safely. Nothing further has been sent. Please try again later.'});
-  }
-}
+    const b=await readBody(req);
+    if(b.website) return json(res,200,{ok:true});
+    const started=Number(b.form_started_at||0); if(started && Date.now()-started<2500) return json(res,400,{message:'Please check the form and try again.'});
+    const route=b.route==='referrer'?'referrer':'parent';
+    if(!bool(b.privacy_accepted)) return json(res,400,{message:'Please confirm that you have read the privacy information.'});
+    let row={route,status:'new',privacy_accepted:true};
+    if(route==='parent'){
+      const required=['submitter_name','submitter_relationship','submitter_email','child_name','date_of_birth','life_status','cancer_type'];
+      for(const key of required){ if(!cleanText(b[key])) return json(res,400,{message:'Please complete all required fields.'}); }
+      if(!isEmail(b.submitter_email)) return json(res,400,{message:'Please enter a valid email address.'});
+      if(!bool(b.consent_heroes)||!bool(b.consent_health)) return json(res,400,{message:'The Harper’s Heroes and health-information consent boxes are required for a direct registration.'});
+      row={...row,
+        submitter_name:cleanText(b.submitter_name,120), submitter_relationship:cleanText(b.submitter_relationship,120), submitter_email:cleanText(b.submitter_email,180), submitter_phone:cleanText(b.submitter_phone,60),
+        child_name:cleanText(b.child_name,160), preferred_name:cleanText(b.preferred_name,100), date_of_birth:cleanText(b.date_of_birth,20), postcode_prefix:cleanText(b.postcode_prefix,16).toUpperCase(), life_status:cleanText(b.life_status,120),
+        cancer_type:cleanText(b.cancer_type,180), diagnosis_date_text:cleanText(b.diagnosis_date_text,100), journey_notes:cleanText(b.journey_notes,4000), interests:cleanText(b.interests,2500),
+        consent_heroes:true, consent_health:true, consent_recognition:bool(b.consent_recognition), consent_events:bool(b.consent_events), consent_updates:bool(b.consent_updates), consent_media_interest:bool(b.consent_media_interest)
+      };
+    } else {
+      const required=['referrer_name','referrer_relationship','referrer_email','child_name','family_contact_name'];
+      for(const key of required){ if(!cleanText(b[key])) return json(res,400,{message:'Please complete all required referral fields.'}); }
+      if(!isEmail(b.referrer_email)) return json(res,400,{message:'Please enter a valid referrer email address.'});
+      if(!bool(b.family_aware)) return json(res,400,{message:'Please confirm that the family knows about the referral.'});
+      row={...row,
+        referrer_name:cleanText(b.referrer_name,120), referrer_relationship:cleanText(b.referrer_relationship,160), referrer_email:cleanText(b.referrer_email,180), referrer_phone:cleanText(b.referrer_phone,60),
+        child_name:cleanText(b.child_name,160), family_contact_name:cleanText(b.family_contact_name,160), family_contact_email:cleanText(b.family_contact_email,180), family_contact_phone:cleanText(b.family_contact_phone,60),
+        family_aware:true, referral_reason:cleanText(b.referral_reason,1500)
+      };
+    }
+    const record=await store.insert('referrals',row);
+    await audit(null,'create','referral',record.id,{route});
+    sendEmail({subject:`New Project Golden Child ${route==='parent'?'registration':'referral'} — ${record.id.slice(0,8)}`,text:`A new ${route} submission has been received.\nReference: ${record.id}\nPlease sign in to the secure admin area to review it.`,replyTo: route==='parent'?row.submitter_email:row.referrer_email}).catch(err=>console.error(err));
+    return json(res,201,{ok:true,reference:record.id.slice(0,8).toUpperCase()});
+  }catch(err){ console.error(err); return json(res,503,{message: err.message==='DATABASE_NOT_CONFIGURED'?'The secure registration service is not connected yet. Please try again later.':'We could not securely save this submission just now. Please try again later.'}); }
+};
