@@ -33,7 +33,11 @@ const REQUIRED_COLUMNS = {
     'updates','status','admin_notes','created_at','updated_at'
   ],
   contacts: ['id','name','email','subject','message','status','admin_notes','created_at','updated_at'],
-  audit_log: ['id','actor_email','action','entity_type','entity_id','detail','created_at','updated_at']
+  audit_log: ['id','actor_email','action','entity_type','entity_id','detail','created_at','updated_at'],
+  communications: [
+    'id','hero_id','referral_id','direction','method','contact_name','contact_email','contact_phone',
+    'subject','notes','outcome','occurred_at','follow_up_date','created_by','created_at','updated_at'
+  ]
 };
 
 module.exports = async function(req,res){
@@ -49,7 +53,7 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  const ok = tableReadOk && write.ok && version === '2.0.0';
+  const ok = tableReadOk && write.ok && version === '2.1.0';
 
   return json(res,200,{
     ok,

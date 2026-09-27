@@ -1,3 +1,18 @@
+# v2.1.0 — Brand, deletion controls and communications
+
+- Replaced the previous star logo with the approved cape/PGC logo using the childhood cancer awareness ribbon.
+- Updated the brand tags to Awareness · Recognition · Community.
+- Removed the overlapping handwritten hero strapline that caused the homepage logo formatting error.
+- Added a responsive logo lock-up so the complete head, cape, wordmark and tags remain visible.
+- Added permanent delete controls for referrals, Harper's Heroes records, recognition actions, events, event gallery entries, Go Gold registrations, website messages and communication records.
+- Delete actions require two confirmations for primary records.
+- Added a private Communications section for logging email, phone, SMS/WhatsApp, letters, in-person contact, video calls and other contact.
+- Communications can be linked to a Harper's Hero or referral and include date/time, direction, contact details, subject, notes, outcome and follow-up date.
+- Added quick “Log communication” controls directly from referrals and Harper's Heroes.
+- Added a communications dashboard count.
+- Added `pgc_communications` to System Health.
+- Supabase schema version is now 2.1.0.
+
 # v2.0.0 — Final canonical database rebuild
 
 - Replaced dependency on legacy Supabase tables with clean canonical `pgc_*` tables.

@@ -248,3 +248,59 @@
 .loading-card{padding:24px;color:#71675e;background:#fff;border:1px solid #e6ddd2;border-radius:16px}
 .success-box{background:#edf8ee!important;border-color:#abd5ae!important;color:#28582d!important}
 @media(max-width:760px){.admin-item-grid{grid-template-columns:1fr}.admin-list-button{flex-direction:column}}
+
+
+/* v2.1.0: communications, deletion controls and improved responsive admin */
+.btn-danger{
+  color:#8e241a;
+  background:#fff4f2;
+  border-color:#e9b0a9;
+}
+.btn-danger:hover{background:#ffe8e4;border-color:#cf756a}
+.danger-link{color:#9a2c21!important}
+.inline-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.communications-grid{
+  display:grid;
+  grid-template-columns:minmax(340px,.85fr) minmax(0,1.15fr);
+  gap:20px;
+  align-items:start;
+}
+.communication-editor{position:sticky;top:24px}
+.compact-top{margin-bottom:12px}
+.communication-item details{background:#faf7f2}
+.event-admin-list-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+}
+.compact-delete{min-height:46px;padding:0 14px}
+.gallery-thumb{
+  position:relative;
+  width:130px;
+}
+.gallery-thumb img{
+  display:block;
+  width:130px;
+  height:92px;
+  object-fit:cover;
+  border-radius:9px;
+}
+.gallery-remove{
+  width:100%;
+  border:0;
+  background:#fff0ed;
+  color:#8e241a;
+  font-weight:800;
+  padding:6px 8px;
+  border-radius:0 0 9px 9px;
+  cursor:pointer;
+}
+@media(max-width:1050px){
+  .communications-grid{grid-template-columns:1fr}
+  .communication-editor{position:relative;top:auto}
+}
+@media(max-width:760px){
+  .event-admin-list-row{grid-template-columns:1fr}
+  .compact-delete{width:100%}
+}

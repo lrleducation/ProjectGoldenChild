@@ -1,4 +1,15 @@
-# Project Golden Child v2.0.0
+
+## v2.1.0 upgrade
+
+If v2.0.0 is already live, run `supabase/UPDATE_v2.1.0.sql` in Supabase before deploying the code.
+
+After deployment, Admin → System Health should show:
+
+`Database ready — schema 2.1.0. Read and write checks passed.`
+
+The new Communications section is private admin functionality. Delete controls permanently remove the selected active database entry and are audit logged before deletion.
+
+# Project Golden Child v2.1.0
 
 This is the final canonical rebuild of the Project Golden Child website/database integration.
 

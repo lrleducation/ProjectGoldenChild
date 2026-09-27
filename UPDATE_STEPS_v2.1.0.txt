@@ -1,0 +1,30 @@
+PROJECT GOLDEN CHILD v2.1.0 — UPDATE STEPS
+
+1. Supabase
+   Open SQL Editor → New query.
+   Run: supabase/UPDATE_v2.1.0.sql
+   The final check must return ZERO ROWS.
+
+2. GitHub
+   Replace your current website files with the contents of this v2.1.0 package.
+   Keep the hidden .git folder.
+
+3. GitHub Desktop
+   Commit message:
+   Project Golden Child v2.1.0 brand admin communications
+   Commit to main → Push origin.
+
+4. Vercel
+   Wait for the new deployment to show Ready.
+   No existing environment variables need changing.
+
+5. Admin
+   Sign in at /admin.
+   Dashboard → System Health → Check now.
+   It must show schema 2.1.0 and all checks OK.
+
+6. Check:
+   - homepage logo no longer overlaps
+   - new ribbon logo is visible
+   - Communications section works
+   - delete controls work on a TEST record first

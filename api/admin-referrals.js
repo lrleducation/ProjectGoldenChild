@@ -81,6 +81,22 @@ module.exports = async function(req,res){
       return json(res,400,{message:'Unknown action.'});
     }
 
+    if(req.method === 'DELETE') {
+      const url = new URL(req.url,'http://local');
+      const id = cleanText(url.searchParams.get('id'),80);
+      if(!id) return json(res,400,{message:'Missing referral id.'});
+
+      const existing = await store.get('referrals',id);
+      if(!existing) return json(res,404,{message:'Referral not found.'});
+
+      await audit(user,'delete','referral',id,{
+        child_name:existing.child_name,
+        route:existing.route
+      });
+      await store.remove('referrals',id);
+      return json(res,200,{ok:true});
+    }
+
     return json(res,405,{message:'Method not allowed.'});
   } catch(err) {
     console.error('Admin referrals error',err);
