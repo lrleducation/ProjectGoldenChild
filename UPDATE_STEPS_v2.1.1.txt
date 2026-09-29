@@ -1,0 +1,11 @@
+PROJECT GOLDEN CHILD v2.1.1 — LOGO UPDATE
+
+1. No Supabase changes are required.
+2. Extract this ZIP.
+3. Replace the website files in your existing GitHub repository with these files, keeping the hidden .git folder.
+4. GitHub Desktop:
+   Commit message: Project Golden Child v2.1.1 final logo
+   Commit to main
+   Push origin
+5. Wait for Vercel to show Ready.
+6. Hard-refresh the live site once (Ctrl+F5) if your browser still shows the previous cached logo.

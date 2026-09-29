@@ -1,3 +1,12 @@
+# v2.1.1 — Final Project Golden Child logo
+
+- Replaced the website master logo with the approved transparent cape logo supplied by Adam.
+- The approved artwork uses the floating gold cape as the PGC hero symbol, with integrated PGC lettering, childhood cancer awareness ribbon and the strapline Awareness | Recognition | Community.
+- Updated the compact navigation/admin mark from the same artwork.
+- Updated the favicon from the same artwork.
+- Added v2.1.1 asset cache-busting so Vercel/browser caches do not continue showing the previous logo.
+- No database or Supabase changes are required for this update.
+
 # v2.1.0 — Brand, deletion controls and communications
 
 - Replaced the previous star logo with the approved cape/PGC logo using the childhood cancer awareness ribbon.
