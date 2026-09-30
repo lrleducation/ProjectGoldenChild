@@ -1,3 +1,13 @@
+# v2.1.2 — Improved physically plausible cape logo
+
+- Replaced the website master logo with the newly approved Project Golden Child cape artwork.
+- Updated the cape silhouette so the lower hem has a single continuous fabric edge rather than impossible doubled folds.
+- Simplified the collar/neckline so it reads as a believable rear cape attachment while retaining the heroic, stylised presentation.
+- Retained the integrated PGC lettering, childhood cancer awareness ribbon and Awareness | Recognition | Community identity.
+- Regenerated the compact navigation/admin mark and favicon from the same approved artwork.
+- Added v2.1.2 asset cache-busting so browsers and Vercel do not continue displaying the previous logo.
+- No Supabase or database changes are required for this release.
+
 # v2.1.1 — Final Project Golden Child logo
 
 - Replaced the website master logo with the approved transparent cape logo supplied by Adam.

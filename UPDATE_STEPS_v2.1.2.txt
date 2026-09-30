@@ -1,0 +1,14 @@
+PROJECT GOLDEN CHILD v2.1.2 — IMPROVED LOGO UPDATE
+
+1. No Supabase changes are required.
+2. Extract this ZIP.
+3. Replace the current website files in your existing GitHub repository with these files.
+4. Keep the hidden .git folder.
+5. In GitHub Desktop use:
+   Project Golden Child v2.1.2 improved cape logo
+6. Commit to main.
+7. Push origin.
+8. Wait for Vercel to show Ready.
+9. Refresh the live website. If the old logo remains in your browser cache, press Ctrl+F5 once.
+
+This update changes branding assets only. Admin, communications, deletion controls and database functionality from v2.1.1 remain intact.
