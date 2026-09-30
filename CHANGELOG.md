@@ -1,3 +1,12 @@
+# v2.3.2 — Storage signing permissions repair
+
+- Explicitly grants `service_role` the Storage table privileges required to create signed upload URLs.
+- Removes the unnecessary `upsert:false` option from signed upload URL creation and follows the current Supabase default example.
+- System Health now tests two separate Storage capabilities: reading the `event-public` bucket and actually creating a signed upload URL.
+- Upload-sign failures now return a safe diagnostic object to the authenticated administrator.
+- Keeps direct-to-Supabase uploads; large poster/photo files still do not pass through Vercel Functions.
+- Schema/version marker is now 2.3.2.
+
 # v2.3.1 — Direct Supabase event-image uploads
 
 - Replaced base64 image uploads through Vercel Functions with signed direct uploads to Supabase Storage.

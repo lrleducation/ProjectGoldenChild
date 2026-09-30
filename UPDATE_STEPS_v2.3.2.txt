@@ -1,0 +1,41 @@
+PROJECT GOLDEN CHILD v2.3.2 — STORAGE SIGNING FIX
+
+The error:
+  “The image store could not prepare an upload”
+
+occurs BEFORE the image itself is uploaded. The server is failing to create the
+short-lived Supabase signed upload URL.
+
+v2.3.2 repairs the Storage permissions used by that signing step.
+
+INSTALL IN THIS ORDER
+
+1. Supabase → SQL Editor → New query.
+2. Run:
+   supabase/UPDATE_v2.3.2_STORAGE_PERMISSIONS.sql
+
+3. The final result should show ALL of the following:
+   bucket_exists = true
+   public = true
+   file_size_limit = 15728640
+   service_role_can_read_bucket = true
+   service_role_can_insert_objects = true
+   service_role_can_select_objects = true
+
+4. Replace the website code with this v2.3.2 package.
+5. Keep the hidden .git folder.
+6. GitHub Desktop commit:
+   Project Golden Child v2.3.2 storage signing fix
+7. Commit to main → Push origin.
+8. Wait for Vercel Ready.
+9. Ctrl+F5 once on /admin.
+10. Admin → System Health → Check now.
+
+EXPECTED:
+   Database ready — schema 2.3.2. Read and write checks passed.
+   event image bucket: OK
+   signed image uploads: OK
+
+11. Test the poster upload again.
+
+No new environment variables are required.

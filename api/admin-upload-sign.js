@@ -71,13 +71,20 @@ module.exports=async function(req,res){
     const supabase=getSupabaseAdmin();
     const {data,error}=await supabase.storage
       .from('event-public')
-      .createSignedUploadUrl(objectPath,{upsert:false});
+      .createSignedUploadUrl(objectPath);
 
     if(error || !data?.signedUrl){
-      console.error('Create signed upload URL failed',error);
+      const diagnostic={
+        message:error?.message || 'No signed upload URL was returned.',
+        statusCode:error?.statusCode || error?.status || 0,
+        error:error?.error || '',
+        bucket:'event-public'
+      };
+      console.error('Create signed upload URL failed',diagnostic);
+
       return json(res,503,{
         message:'The image store could not prepare an upload. Check Storage in System Health.',
-        diagnostic:error?.message || 'No signed upload URL was returned.'
+        diagnostic
       });
     }
 

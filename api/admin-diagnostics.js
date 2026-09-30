@@ -59,25 +59,41 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  let storage={ok:false,detail:''};
+  let storage={ok:false,bucketOk:false,signingOk:false,detail:''};
   try{
     const supabase=getSupabaseAdmin();
-    const {data,error}=await supabase.storage.getBucket('event-public');
-    if(error) throw error;
+
+    const {data:bucket,error:bucketError}=await supabase.storage.getBucket('event-public');
+    if(bucketError) throw bucketError;
+
+    const bucketOk=Boolean(bucket?.id === 'event-public');
+
+    const probePath=`health/${Date.now()}-signed-upload-check.png`;
+    const {data:signed,error:signError}=await supabase.storage
+      .from('event-public')
+      .createSignedUploadUrl(probePath);
+
+    const signingOk=Boolean(!signError && signed?.signedUrl);
+
     storage={
-      ok:Boolean(data?.id === 'event-public'),
-      public:Boolean(data?.public),
-      fileSizeLimit:Number(data?.file_size_limit || 0),
-      allowedMimeTypes:data?.allowed_mime_types || []
+      ok:bucketOk && signingOk,
+      bucketOk,
+      signingOk,
+      public:Boolean(bucket?.public),
+      fileSizeLimit:Number(bucket?.file_size_limit || 0),
+      allowedMimeTypes:bucket?.allowed_mime_types || [],
+      detail:signError?.message || ''
     };
   }catch(err){
     storage={
       ok:false,
+      bucketOk:false,
+      signingOk:false,
       detail:err?.message || String(err)
     };
   }
 
-  const ok = tableReadOk && write.ok && storage.ok && version === '2.3.1';
+  const ok = tableReadOk && write.ok && storage.ok && version === '2.3.2';
 
   return json(res,200,{
     ok,
