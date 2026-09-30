@@ -24,7 +24,7 @@ const REQUIRED_COLUMNS = {
   ],
   events: [
     'id','title','start_at','end_at','location','category','status','max_places','summary','body',
-    'public_image_url','booking_url','children_attending','family_reach','value_support','published_at',
+    'public_image_url','poster_alt','display_section','booking_url','children_attending','family_reach','value_support','published_at',
     'created_at','updated_at'
   ],
   event_gallery: ['id','event_id','image_url','alt_text','sort_order','created_at','updated_at'],
@@ -53,7 +53,7 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  const ok = tableReadOk && write.ok && version === '2.1.0';
+  const ok = tableReadOk && write.ok && version === '2.2.0';
 
   return json(res,200,{
     ok,

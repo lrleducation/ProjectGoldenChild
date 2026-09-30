@@ -1,0 +1,24 @@
+PROJECT GOLDEN CHILD — EVENT POSTER PROMPT
+
+You can type this or simply read it aloud naturally:
+
+“Create a Project Golden Child event poster for [EVENT NAME].
+
+The event is on [DATE] at [TIME] at [LOCATION].
+It is for [WHO THE EVENT IS FOR].
+The main purpose is [AWARENESS / RECOGNITION / COMMUNITY / FUNDRAISING / FAMILY EXPERIENCE].
+
+Please include [KEY INFORMATION: price, booking details, age range, what is included, contact details, QR code space, etc.].
+
+Use the Project Golden Child brand. I will upload the approved PGC logo, so use that exact logo and do not redraw or alter it. The overall feel should be warm, premium, hopeful and heroic, but not childish or gimmicky. Make the important information immediately readable.
+
+Format it as [A4 portrait / A4 landscape / square social post / 4:5 social post].
+
+Do not invent dates, prices, contact details or promises that I have not given you. Produce the finished poster artwork ready for me to upload to the Project Golden Child website.”
+
+QUICKER VOICE VERSION
+
+“Create me a Project Golden Child poster for [event]. It is on [date/time] at [location] and is aimed at [audience]. The key message is [message]. Include [details]. Use the exact PGC logo I upload, keep it warm, premium and heroic without looking gimmicky, and format it as [format]. Do not invent any details.”
+
+TIP
+For the website, A4 portrait or a 4:5 portrait social format will normally give the strongest poster presentation. The new Events admin accepts PNG, JPEG and WebP images up to 8 MB.

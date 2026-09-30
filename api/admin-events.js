@@ -1,7 +1,119 @@
-const {json,readBody,cleanText}=require('../lib/http'); const {requireAdmin}=require('../lib/security'); const store=require('../lib/store'); const {audit}=require('../lib/audit');
-module.exports=async function(req,res){ const user=requireAdmin(req,res); if(!user) return; try{
- if(req.method==='GET'){const items=await store.list('events',{order:'start_at.desc'}); const gallery=await store.list('event_gallery',{order:'sort_order.asc'}); return json(res,200,{items:items.map(e=>({...e,gallery:gallery.filter(g=>g.event_id===e.id)}))});}
- if(req.method==='POST'){const b=await readBody(req); const patch={title:cleanText(b.title,180),start_at:cleanText(b.start_at,40)||null,end_at:cleanText(b.end_at,40)||null,location:cleanText(b.location,180),category:cleanText(b.category,100),status:cleanText(b.status,30)||'draft',max_places:Number(b.max_places||0)||null,summary:cleanText(b.summary,650),body:cleanText(b.body,12000),children_attending:Number(b.children_attending||0),family_reach:Number(b.family_reach||0),value_support:Number(b.value_support||0),booking_url:cleanText(b.booking_url,500),public_image_url:cleanText(b.public_image_url,1000)}; if(!patch.title) return json(res,400,{message:'Event title is required.'}); if(patch.status==='published'&&!patch.published_at) patch.published_at=new Date().toISOString(); let item; if(b.id) item=await store.update('events',cleanText(b.id,80),patch); else item=await store.insert('events',patch); await audit(user,b.id?'update':'create','event',item.id,{status:item.status}); return json(res,b.id?200:201,{item});}
- if(req.method==='DELETE'){const url=new URL(req.url,'http://local'); const galleryId=cleanText(url.searchParams.get('gallery_id'),80); if(galleryId){const img=await store.get('event_gallery',galleryId); if(!img)return json(res,404,{message:'Gallery image not found.'}); await audit(user,'delete','event_gallery',galleryId,{event_id:img.event_id}); await store.remove('event_gallery',galleryId); return json(res,200,{ok:true});} const id=cleanText(url.searchParams.get('id'),80); const event=await store.get('events',id); if(!event)return json(res,404,{message:'Event not found.'}); await audit(user,'delete','event',id,{title:event.title}); await store.remove('events',id); return json(res,200,{ok:true});}
- return json(res,405,{message:'Method not allowed.'});
- }catch(err){console.error(err); return json(res,503,{message:'Event data is unavailable.'});} };
+const {json,readBody,cleanText}=require('../lib/http');
+const {requireAdmin}=require('../lib/security');
+const store=require('../lib/store');
+const {audit}=require('../lib/audit');
+
+function validStatus(value){
+  return ['draft','published','archived','cancelled'].includes(value) ? value : 'draft';
+}
+
+function validSection(value,startAt){
+  if(value==='past' || value==='future') return value;
+  if(startAt){
+    const time=new Date(startAt).getTime();
+    if(Number.isFinite(time) && time<Date.now()) return 'past';
+  }
+  return 'future';
+}
+
+module.exports=async function(req,res){
+  const user=requireAdmin(req,res);
+  if(!user) return;
+
+  try{
+    if(req.method==='GET'){
+      const items=await store.list('events',{order:'updated_at.desc'});
+      const gallery=await store.list('event_gallery',{order:'sort_order.asc'});
+      return json(res,200,{
+        items:items.map(event=>({
+          ...event,
+          display_section:validSection(event.display_section,event.start_at),
+          gallery:gallery.filter(image=>image.event_id===event.id)
+        }))
+      });
+    }
+
+    if(req.method==='POST'){
+      const body=await readBody(req);
+      const id=cleanText(body.id,80);
+      const existing=id ? await store.get('events',id) : null;
+
+      const startAt=cleanText(body.start_at,40)||null;
+      const status=validStatus(cleanText(body.status,30));
+      const publicImageUrl=cleanText(
+        body.public_image_url !== undefined ? body.public_image_url : existing?.public_image_url,
+        1000
+      );
+
+      const patch={
+        title:cleanText(body.title,180),
+        start_at:startAt,
+        end_at:cleanText(body.end_at,40)||null,
+        location:cleanText(body.location,180),
+        category:cleanText(body.category,100)||'Community',
+        status,
+        display_section:validSection(cleanText(body.display_section,20),startAt),
+        poster_alt:cleanText(body.poster_alt,300),
+        max_places:Number(body.max_places||0)||null,
+        summary:cleanText(body.summary,650),
+        body:cleanText(body.body,12000),
+        children_attending:Number(body.children_attending||0),
+        family_reach:Number(body.family_reach||0),
+        value_support:Number(body.value_support||0),
+        booking_url:cleanText(body.booking_url,500),
+        public_image_url:publicImageUrl
+      };
+
+      if(!patch.title){
+        return json(res,400,{message:'Event title is required.'});
+      }
+
+      if(status==='published' && !publicImageUrl){
+        return json(res,400,{
+          message:'Upload a poster before making this event live on the website.'
+        });
+      }
+
+      if(status==='published' && !(existing?.published_at)){
+        patch.published_at=new Date().toISOString();
+      }
+
+      const item=id
+        ? await store.update('events',id,patch)
+        : await store.insert('events',patch);
+
+      await audit(user,id?'update':'create','event',item.id,{
+        status:item.status,
+        display_section:item.display_section
+      });
+
+      return json(res,id?200:201,{item});
+    }
+
+    if(req.method==='DELETE'){
+      const url=new URL(req.url,'http://local');
+      const galleryId=cleanText(url.searchParams.get('gallery_id'),80);
+
+      if(galleryId){
+        const image=await store.get('event_gallery',galleryId);
+        if(!image) return json(res,404,{message:'Gallery image not found.'});
+        await audit(user,'delete','event_gallery',galleryId,{event_id:image.event_id});
+        await store.remove('event_gallery',galleryId);
+        return json(res,200,{ok:true});
+      }
+
+      const id=cleanText(url.searchParams.get('id'),80);
+      const event=await store.get('events',id);
+      if(!event) return json(res,404,{message:'Event not found.'});
+
+      await audit(user,'delete','event',id,{title:event.title});
+      await store.remove('events',id);
+      return json(res,200,{ok:true});
+    }
+
+    return json(res,405,{message:'Method not allowed.'});
+  }catch(err){
+    console.error('Admin events error',err);
+    return json(res,503,{message:'Event data is unavailable.'});
+  }
+};

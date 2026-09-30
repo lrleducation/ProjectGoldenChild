@@ -506,9 +506,19 @@
   }
 
   // ------------------------------------------------------------
-  // Events
+  // Events — poster-first publishing
   // ------------------------------------------------------------
   let eventCache = [];
+
+  const eventVisibilityLabel = status => ({
+    draft:'Not live',
+    published:'Live',
+    archived:'Archived',
+    cancelled:'Cancelled'
+  }[status] || status || 'Not live');
+
+  const eventSectionLabel = section =>
+    section === 'past' ? 'Past events' : 'Upcoming';
 
   async function loadEvents() {
     const list = $('#events-list');
@@ -517,15 +527,37 @@
     try {
       const {items} = await api('/api/admin-events');
       eventCache = items;
-      list.innerHTML = items.length ? items.map(event => `
-        <div class="event-admin-list-row">
-          <button class="admin-list-button" data-edit-event="${event.id}">
+
+      const order = {published:0,draft:1,archived:2,cancelled:3};
+      const sorted = [...items].sort((a,b) => {
+        const statusDiff=(order[a.status] ?? 9)-(order[b.status] ?? 9);
+        if(statusDiff) return statusDiff;
+        return String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || ''));
+      });
+
+      list.innerHTML = sorted.length ? sorted.map(event => `
+        <article class="event-poster-admin-card">
+          ${event.public_image_url
+            ? `<button class="event-poster-admin-thumb" data-edit-event="${event.id}" aria-label="Edit ${esc(event.title)}">
+                 <img src="${esc(event.public_image_url)}" alt="">
+               </button>`
+            : `<button class="event-poster-admin-thumb poster-missing" data-edit-event="${event.id}">
+                 <span>No poster</span>
+               </button>`}
+          <div class="event-poster-admin-copy">
             <strong>${esc(event.title)}</strong>
-            <span>${esc(event.status)} · ${esc(fmt(event.start_at))}</span>
-          </button>
-          <button class="btn btn-danger compact-delete" data-delete-event-list="${event.id}" data-delete-name="${esc(event.title)}">Delete</button>
-        </div>
-      `).join('') : '<div class="loading-card">No events yet.</div>';
+            <div class="event-admin-badges">
+              <span class="status-pill ${event.status==='published'?'status-live':''}">${esc(eventVisibilityLabel(event.status))}</span>
+              <span class="status-pill">${esc(eventSectionLabel(event.display_section))}</span>
+            </div>
+            <div class="small">${event.start_at ? esc(fmt(event.start_at)) : 'No event date set'}${event.location ? ` · ${esc(event.location)}` : ''}</div>
+            <div class="admin-item-actions">
+              <button class="btn btn-outline" data-edit-event="${event.id}">Edit</button>
+              <button class="btn btn-danger" data-delete-event-list="${event.id}" data-delete-name="${esc(event.title)}">Delete</button>
+            </div>
+          </div>
+        </article>
+      `).join('') : '<div class="loading-card">No event posters yet. Click “Add event poster” to create one.</div>';
 
       $$('[data-edit-event]').forEach(button => button.addEventListener('click',() => {
         openEvent(eventCache.find(event => event.id === button.dataset.editEvent));
@@ -549,11 +581,13 @@
   const eventFields = {
     id:'#event-id',
     title:'#event-title',
+    display_section:'#event-section',
+    status:'#event-status',
     start_at:'#event-start',
     end_at:'#event-end',
     location:'#event-location',
     category:'#event-category',
-    status:'#event-status',
+    poster_alt:'#event-poster-alt',
     max_places:'#event-max',
     summary:'#event-summary',
     body:'#event-body',
@@ -564,23 +598,44 @@
     public_image_url:'#event-image-url'
   };
 
+  function renderPosterPreview(url,alt='') {
+    const preview=$('#image-preview');
+    if(!preview) return;
+    preview.innerHTML=url
+      ? `<img src="${esc(url)}" alt="${esc(alt)}">`
+      : '<div class="poster-preview-empty">Choose a poster file. It will upload when you save.</div>';
+  }
+
   function openEvent(event={}) {
     $('#event-editor').hidden = false;
-    $('#event-editor-title').textContent = event.id ? 'Edit event' : 'New event';
+    $('#event-editor-title').textContent = event.id ? 'Edit event poster' : 'Add event poster';
+
+    const defaults = {
+      display_section:'future',
+      status:'draft',
+      category:'Community',
+      children_attending:0,
+      family_reach:0,
+      value_support:0,
+      ...event
+    };
 
     for(const [key,selector] of Object.entries(eventFields)) {
-      const el = $(selector);
-      let value = event[key] ?? '';
-      if((key === 'start_at' || key === 'end_at') && value) value = String(value).slice(0,16);
-      el.value = value;
+      const element=$(selector);
+      if(!element) continue;
+      let value=defaults[key] ?? '';
+      if((key==='start_at' || key==='end_at') && value) value=String(value).slice(0,16);
+      element.value=value;
     }
 
-    $('#delete-event').hidden = !event.id;
-    $('#image-preview').innerHTML = event.public_image_url
-      ? `<img src="${esc(event.public_image_url)}" alt="">`
-      : '';
+    $('#event-image-file').value='';
+    $('#event-save-state').textContent='';
+    $('#event-error').hidden=true;
+    $('#delete-event').hidden=!event.id;
 
-    $('#gallery-preview').innerHTML = (event.gallery || []).map(image => `
+    renderPosterPreview(event.public_image_url,event.poster_alt);
+
+    $('#gallery-preview').innerHTML=(event.gallery || []).map(image => `
       <div class="gallery-thumb">
         <img src="${esc(image.image_url)}" alt="">
         <button class="gallery-remove" type="button" data-delete-gallery="${image.id}">Remove</button>
@@ -591,90 +646,145 @@
       if(!confirm('Remove this image from the event gallery?')) return;
       await api(`/api/admin-events?gallery_id=${encodeURIComponent(button.dataset.deleteGallery)}`,{method:'DELETE'});
       await loadEvents();
-      const refreshed = eventCache.find(x => x.id === $('#event-id').value);
+      const refreshed=eventCache.find(item => item.id === $('#event-id').value);
       if(refreshed) openEvent(refreshed);
     }));
+
+    $('#event-editor').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  $('#new-event')?.addEventListener('click',() => openEvent({
-    status:'draft',
-    category:'Family experience',
-    children_attending:0,
-    family_reach:0,
-    value_support:0
-  }));
+  $('#new-event')?.addEventListener('click',() => openEvent());
 
   $('#close-event-editor')?.addEventListener('click',() => {
-    $('#event-editor').hidden = true;
+    $('#event-editor').hidden=true;
   });
+
+  const fileToBase64 = file => new Promise((resolve,reject) => {
+    const reader=new FileReader();
+    reader.onload=() => resolve(String(reader.result).split(',')[1]);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+
+  $('#event-image-file')?.addEventListener('change',event => {
+    const file=event.target.files?.[0];
+    if(!file) return;
+    const localUrl=URL.createObjectURL(file);
+    renderPosterPreview(localUrl,$('#event-poster-alt').value);
+  });
+
+  async function uploadEventPoster(eventId,file) {
+    const upload=await api('/api/admin-upload',{
+      method:'POST',
+      body:{
+        event_id:eventId,
+        kind:'poster',
+        mime_type:file.type,
+        alt_text:$('#event-poster-alt').value,
+        base64:await fileToBase64(file)
+      }
+    });
+    return upload.url;
+  }
 
   $('#event-editor')?.addEventListener('submit',async event => {
     event.preventDefault();
-    $('#event-error').hidden = true;
+    $('#event-error').hidden=true;
 
-    const payload = {};
-    for(const [key,selector] of Object.entries(eventFields)) payload[key] = $(selector).value;
+    const selectedFile=$('#event-image-file').files?.[0] || null;
+    const intendedStatus=$('#event-status').value;
+    let payload={};
+
+    for(const [key,selector] of Object.entries(eventFields)) {
+      const element=$(selector);
+      if(element) payload[key]=element.value;
+    }
+
+    if(!payload.title.trim()){
+      return showMessage($('#event-error'),'Add an event title.');
+    }
+
+    const hasExistingPoster=Boolean(payload.public_image_url);
+    if(intendedStatus==='published' && !hasExistingPoster && !selectedFile){
+      return showMessage($('#event-error'),'Choose a poster before making the event live.');
+    }
+
+    const state=$('#event-save-state');
 
     try {
-      const data = await api('/api/admin-events',{method:'POST',body:payload});
-      openEvent(data.item);
+      state.textContent='Saving…';
+
+      // A brand-new event that is intended to go live is created privately
+      // first, then the poster is uploaded, then it is made live. This means
+      // the public site never briefly shows an event without its poster.
+      if(!payload.id){
+        const createPayload={...payload};
+        if(selectedFile && intendedStatus==='published'){
+          createPayload.status='draft';
+        }
+
+        const created=await api('/api/admin-events',{
+          method:'POST',
+          body:createPayload
+        });
+
+        payload.id=created.item.id;
+        $('#event-id').value=payload.id;
+        payload.public_image_url=created.item.public_image_url || '';
+      }
+
+      if(selectedFile){
+        state.textContent='Uploading poster…';
+        payload.public_image_url=await uploadEventPoster(payload.id,selectedFile);
+        $('#event-image-url').value=payload.public_image_url;
+      }
+
+      state.textContent=intendedStatus==='published' ? 'Publishing…' : 'Saving…';
+      payload.status=intendedStatus;
+
+      const saved=await api('/api/admin-events',{
+        method:'POST',
+        body:payload
+      });
+
+      state.textContent=saved.item.status==='published'
+        ? `Live in ${eventSectionLabel(saved.item.display_section)}`
+        : 'Saved';
+
       await loadEvents();
       loadSummary();
+
+      const refreshed=eventCache.find(item => item.id === saved.item.id) || saved.item;
+      openEvent(refreshed);
+      $('#event-save-state').textContent=saved.item.status==='published'
+        ? `Live in ${eventSectionLabel(saved.item.display_section)}`
+        : 'Saved';
     } catch(err) {
+      state.textContent='';
       showMessage($('#event-error'),err.message);
     }
   });
 
   $('#delete-event')?.addEventListener('click',() => {
-    const id = $('#event-id').value;
+    const id=$('#event-id').value;
     if(!id) return;
     deleteRecord({
       url:`/api/admin-events?id=${encodeURIComponent(id)}`,
       label:`the event “${$('#event-title').value || 'this event'}”`,
       after:async() => {
-        $('#event-editor').hidden = true;
+        $('#event-editor').hidden=true;
         await loadEvents();
       }
     });
   });
 
-  const fileToBase64 = file => new Promise((resolve,reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
-  $('#upload-event-image')?.addEventListener('click',async() => {
-    const file = $('#event-image-file').files[0];
-    const id = $('#event-id').value;
-    if(!file || !id) return alert('Save the event first, then choose an image.');
-
-    try {
-      const data = await api('/api/admin-upload',{
-        method:'POST',
-        body:{
-          event_id:id,
-          kind:'hero',
-          mime_type:file.type,
-          base64:await fileToBase64(file)
-        }
-      });
-      $('#event-image-url').value = data.url;
-      $('#image-preview').innerHTML = `<img src="${esc(data.url)}" alt="">`;
-      await loadEvents();
-    } catch(err) {
-      alert(err.message);
-    }
-  });
-
   $('#upload-gallery')?.addEventListener('click',async() => {
-    const files = [...$('#event-gallery-files').files];
-    const id = $('#event-id').value;
-    if(!files.length || !id) return alert('Save the event first, then choose photos.');
+    const files=[...$('#event-gallery-files').files];
+    const id=$('#event-id').value;
+    if(!files.length || !id) return alert('Save the event first, then choose gallery photos.');
 
-    for(const file of files) {
-      try {
+    for(const file of files){
+      try{
         await api('/api/admin-upload',{
           method:'POST',
           body:{
@@ -684,18 +794,33 @@
             base64:await fileToBase64(file)
           }
         });
-      } catch(err) {
+      }catch(err){
         alert(`${file.name}: ${err.message}`);
       }
     }
 
     await loadEvents();
-    openEvent(eventCache.find(event => event.id === id) || {});
+    openEvent(eventCache.find(item => item.id===id) || {});
+  });
+
+  $('#copy-poster-prompt')?.addEventListener('click',async() => {
+    const text=$('#poster-prompt-template').value;
+    const state=$('#copy-prompt-state');
+    try{
+      await navigator.clipboard.writeText(text);
+      state.textContent='Copied.';
+      setTimeout(() => { state.textContent=''; },2000);
+    }catch{
+      $('#poster-prompt-template').select();
+      document.execCommand('copy');
+      state.textContent='Copied.';
+      setTimeout(() => { state.textContent=''; },2000);
+    }
   });
 
   $('#generate-story')?.addEventListener('click',async() => {
     try {
-      const data = await api('/api/admin-event-draft',{
+      const data=await api('/api/admin-event-draft',{
         method:'POST',
         body:{
           attendees:$('#ai-attendees').value,
@@ -703,24 +828,24 @@
           notes:$('#ai-notes').value
         }
       });
-      $('#event-body').value = data.draft;
+      $('#event-body').value=data.draft;
     } catch(err) {
       showMessage($('#event-error'),err.message);
     }
   });
 
   $('#dictate-notes')?.addEventListener('click',() => {
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!Recognition) return alert('Dictation is not supported in this browser.');
 
-    const recognition = new Recognition();
-    recognition.lang = 'en-GB';
-    recognition.interimResults = false;
-    recognition.onstart = () => { $('#dictation-state').textContent = 'Listening…'; };
-    recognition.onresult = event => {
+    const recognition=new Recognition();
+    recognition.lang='en-GB';
+    recognition.interimResults=false;
+    recognition.onstart=() => { $('#dictation-state').textContent='Listening…'; };
+    recognition.onresult=event => {
       $('#ai-notes').value += ($('#ai-notes').value ? ' ' : '') + event.results[0][0].transcript;
     };
-    recognition.onend = () => { $('#dictation-state').textContent = ''; };
+    recognition.onend=() => { $('#dictation-state').textContent=''; };
     recognition.start();
   });
 

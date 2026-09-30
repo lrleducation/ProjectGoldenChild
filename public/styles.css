@@ -747,3 +747,62 @@ p{margin:0 0 1rem}
   .hero-brand-stage{min-height:0;padding:18px 0 34px}
   .hero-brand-logo{width:100%;border-radius:18px}
 }
+
+
+/* v2.2.0 — Poster-first public events */
+.poster-event-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:26px;
+  align-items:start;
+}
+.poster-event-card{
+  overflow:hidden;
+  border:1px solid #e6d8c5;
+  border-radius:20px;
+  background:#fffdf8;
+  box-shadow:0 14px 34px rgba(74,45,13,.08);
+}
+.event-poster-link{
+  display:block;
+  background:#f4ede3;
+  border-bottom:1px solid #e9dece;
+}
+.event-poster-image{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:720px;
+  object-fit:contain;
+  margin:0 auto;
+  background:#fff;
+}
+.event-poster-placeholder{
+  aspect-ratio:4/5;
+  display:grid;
+  place-items:center;
+  padding:30px;
+  background:linear-gradient(145deg,#f7eddb,#fffdf8);
+  color:#745d43;
+  font-weight:800;
+  text-align:center;
+}
+.poster-event-meta{padding:22px}
+.poster-event-meta h3{margin:.25rem 0 .45rem}
+.poster-event-meta p{margin:.45rem 0}
+.poster-event-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:18px;
+}
+.poster-event-past{background:#fbf8f2}
+.poster-event-past .event-poster-image{filter:saturate(.92)}
+@media(max-width:1000px){
+  .poster-event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+  .poster-event-grid{grid-template-columns:1fr}
+  .poster-event-card{border-radius:16px}
+  .poster-event-meta{padding:18px}
+}

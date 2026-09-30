@@ -1,0 +1,40 @@
+PROJECT GOLDEN CHILD v2.2.0 — POSTER EVENTS UPDATE
+
+1. SUPABASE FIRST
+   Open Supabase → SQL Editor → New query.
+   Run: supabase/UPDATE_v2.2.0.sql
+   The final check should return ZERO ROWS.
+
+2. GITHUB
+   Replace the current website files with this v2.2.0 package.
+   Keep the hidden .git folder.
+
+3. GITHUB DESKTOP
+   Commit message:
+   Project Golden Child v2.2.0 poster events
+   Commit to main → Push origin.
+
+4. VERCEL
+   Wait until the deployment says Ready.
+   No Vercel environment variables need changing.
+
+5. CHECK
+   Admin → System Health → Check now.
+   Expected:
+   Database ready — schema 2.2.0. Read and write checks passed.
+
+6. TEST WITH A FICTIONAL EVENT
+   Events → Add event poster
+   Upload a poster
+   Choose Upcoming events
+   Choose Live on website
+   Save event
+   Confirm it appears on the public Events page.
+
+7. MOVE IT TO PAST
+   Edit the same event
+   Change Website section to Past events
+   Save event
+   Confirm it moves to the Past events tab immediately.
+
+No code change is needed for future posters after this release.

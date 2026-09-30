@@ -1,10 +1,45 @@
-const {json}=require('../lib/http'); const store=require('../lib/store');
+const {json}=require('../lib/http');
+const store=require('../lib/store');
+
+function sectionFor(event){
+  if(event.display_section==='past' || event.display_section==='future'){
+    return event.display_section;
+  }
+  if(event.start_at){
+    const time=new Date(event.start_at).getTime();
+    if(Number.isFinite(time) && time<Date.now()) return 'past';
+  }
+  return 'future';
+}
+
 module.exports=async function(req,res){
- if(req.method!=='GET') return json(res,405,{message:'Method not allowed.'});
- try{
-  const events=(await store.list('events',{filters:{status:'published'},order:'start_at.asc',limit:100}));
-  const galleries=await store.list('event_gallery',{order:'sort_order.asc',limit:500});
-  const safe=events.map(e=>({id:e.id,title:e.title,start_at:e.start_at,end_at:e.end_at,location:e.location,category:e.category,summary:e.summary,body:e.body,public_image_url:e.public_image_url,booking_url:e.booking_url,gallery:galleries.filter(g=>g.event_id===e.id).map(g=>({image_url:g.image_url,alt_text:g.alt_text||''}))}));
-  return json(res,200,{events:safe});
- }catch(err){console.error(err); return json(res,200,{events:[]});}
+  if(req.method!=='GET') return json(res,405,{message:'Method not allowed.'});
+
+  try{
+    const events=await store.list('events',{
+      filters:{status:'published'},
+      order:'created_at.desc',
+      limit:150
+    });
+
+    const safe=events.map(event=>({
+      id:event.id,
+      title:event.title,
+      start_at:event.start_at,
+      end_at:event.end_at,
+      location:event.location,
+      category:event.category,
+      summary:event.summary,
+      body:event.body,
+      public_image_url:event.public_image_url,
+      poster_alt:event.poster_alt || `${event.title || 'Project Golden Child event'} poster`,
+      booking_url:event.booking_url,
+      display_section:sectionFor(event)
+    }));
+
+    return json(res,200,{events:safe});
+  }catch(err){
+    console.error('Public events error',err);
+    return json(res,200,{events:[]});
+  }
 };

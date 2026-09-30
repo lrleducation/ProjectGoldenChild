@@ -92,7 +92,218 @@
   </div>
 </section>
 
-<section class="admin-section" data-section="events"><div class="admin-top"><div><span class="eyebrow">Events</span><h2>Publish &amp; archive</h2></div><button class="btn btn-primary" id="new-event">New event</button></div><div class="event-admin-grid"><div><div class="admin-list" id="events-list"></div></div><form class="panel event-editor" hidden="" id="event-editor"><input id="event-id" type="hidden"/><div class="editor-head"><div><span class="eyebrow">Event editor</span><h3 id="event-editor-title">New event</h3></div><button class="link-button" id="close-event-editor" type="button">Close</button></div><div class="field-grid"><div class="field full"><label for="event-title">Title</label><input id="event-title" required=""/></div><div class="field"><label for="event-start">Start date &amp; time</label><input id="event-start" type="datetime-local"/></div><div class="field"><label for="event-end">End date &amp; time</label><input id="event-end" type="datetime-local"/></div><div class="field"><label for="event-location">Location</label><input id="event-location"/></div><div class="field"><label for="event-category">Category</label><select id="event-category"><option>Family experience</option><option>Awareness</option><option>Recognition</option><option>Community</option></select></div><div class="field"><label for="event-status">Status</label><select id="event-status"><option value="draft">Draft</option><option value="published">Published</option><option value="completed">Completed</option><option value="archived">Archived</option><option value="cancelled">Cancelled</option></select></div><div class="field"><label for="event-max">Maximum places</label><input id="event-max" min="0" type="number"/></div><div class="field full"><label for="event-summary">Short public summary</label><textarea id="event-summary" maxlength="650"></textarea></div><div class="field full"><label for="event-body">Full public story / information</label><textarea class="large-textarea" id="event-body"></textarea></div><div class="field"><label for="event-children">Children attending</label><input id="event-children" min="0" type="number" value="0"/></div><div class="field"><label for="event-family">Total family members reached</label><input id="event-family" min="0" type="number" value="0"/></div><div class="field"><label for="event-value">Value of support (£)</label><input id="event-value" min="0" step="0.01" type="number" value="0"/></div><div class="field"><label for="event-booking">Public booking/info URL, optional</label><input id="event-booking" type="url"/></div><div class="field full"><label>Public event image</label><div class="upload-row"><input accept="image/jpeg,image/png,image/webp" id="event-image-file" type="file"/><button class="btn btn-outline" id="upload-event-image" type="button">Upload approved image</button></div><input id="event-image-url" type="hidden"/><div class="image-preview" id="image-preview"></div><span class="help">Only upload photographs already cleared for public website use.</span></div><div class="field full"><label>Public event gallery</label><div class="upload-row"><input accept="image/jpeg,image/png,image/webp" id="event-gallery-files" multiple="" type="file"/><button class="btn btn-outline" id="upload-gallery" type="button">Upload approved photos</button></div><span class="help">Save the event first, then add as many approved gallery images as you need.</span><div class="gallery-preview" id="gallery-preview"></div></div></div><hr class="admin-rule"/><div class="ai-box"><span class="eyebrow">Event story assistant</span><h3>Turn your notes into a first draft.</h3><p class="small">Type notes or use browser dictation. The generated text is a draft only and is never published automatically.</p><div class="field-grid"><div class="field"><label for="ai-attendees">Who attended / how many?</label><input id="ai-attendees"/></div><div class="field"><label for="ai-aim">What was the aim?</label><input id="ai-aim"/></div><div class="field full"><label for="ai-notes">What happened?</label><textarea id="ai-notes"></textarea><div class="voice-actions"><button class="btn btn-outline" id="dictate-notes" type="button">Start dictation</button><span class="small" id="dictation-state"></span></div></div></div><button class="btn btn-gold" id="generate-story" type="button">Generate draft</button></div><div class="error-box" hidden="" id="event-error"></div><div class="form-actions"><button class="btn btn-danger" id="delete-event" type="button" hidden>Delete event</button><span class="small">Status controls whether the event appears publicly.</span><button class="btn btn-primary" type="submit">Save event</button></div></form></div></section>
+
+<section class="admin-section" data-section="events">
+  <div class="admin-top">
+    <div>
+      <span class="eyebrow">Events</span>
+      <h2>Event posters</h2>
+      <p class="small">Upload a finished poster, choose where it belongs and decide whether it is live. No code change is needed.</p>
+    </div>
+    <button class="btn btn-primary" id="new-event" type="button">Add event poster</button>
+  </div>
+
+  <div class="poster-admin-intro panel">
+    <div>
+      <span class="eyebrow">Simple workflow</span>
+      <h3>Design elsewhere. Publish here.</h3>
+      <p>Create your event poster in ChatGPT, Canva or another design tool. Upload the finished PNG, JPEG or WebP here, then choose <strong>Upcoming</strong> or <strong>Past events</strong> and whether it is <strong>Live</strong> or <strong>Not live</strong>.</p>
+    </div>
+    <details class="poster-prompt-box">
+      <summary>Copy a prompt for ChatGPT</summary>
+      <p class="small">Replace anything in square brackets with your event information. You can also simply read this aloud and fill in the details naturally.</p>
+      <textarea id="poster-prompt-template" readonly>Create a Project Golden Child event poster for [EVENT NAME].
+
+The event is on [DATE] at [TIME] at [LOCATION].
+It is for [WHO THE EVENT IS FOR].
+The main purpose is [AWARENESS / RECOGNITION / COMMUNITY / FUNDRAISING / FAMILY EXPERIENCE].
+
+Please include:
+[KEY INFORMATION, PRICE, BOOKING DETAILS, AGE RANGE, WHAT IS INCLUDED, CONTACT DETAILS, QR CODE SPACE, ETC.]
+
+Use the Project Golden Child brand. I will upload the approved PGC logo, so use that exact logo and do not redraw or alter it. The overall feel should be warm, premium, hopeful and heroic, but not childish or gimmicky. Make the important information immediately readable.
+
+Format: [A4 PORTRAIT / A4 LANDSCAPE / SQUARE SOCIAL POST / 4:5 SOCIAL POST].
+
+Do not invent dates, prices, contact details or promises that I have not given you. Produce the finished poster artwork ready for me to upload to the Project Golden Child website.</textarea>
+      <button class="btn btn-outline" id="copy-poster-prompt" type="button">Copy prompt</button>
+      <span class="small" id="copy-prompt-state"></span>
+    </details>
+  </div>
+
+  <div class="event-admin-grid poster-event-admin-grid">
+    <div>
+      <div class="admin-top compact-top">
+        <div><h3>Your event posters</h3></div>
+        <button class="btn btn-outline" data-refresh="events" type="button">Refresh</button>
+      </div>
+      <div class="admin-list" id="events-list"></div>
+    </div>
+
+    <form class="panel event-editor poster-event-editor" hidden id="event-editor">
+      <input id="event-id" type="hidden">
+
+      <div class="editor-head">
+        <div>
+          <span class="eyebrow">Poster publisher</span>
+          <h3 id="event-editor-title">Add event poster</h3>
+        </div>
+        <button class="link-button" id="close-event-editor" type="button">Close</button>
+      </div>
+
+      <div class="field-grid">
+        <div class="field full">
+          <label for="event-title">Event title</label>
+          <input id="event-title" required>
+        </div>
+
+        <div class="field full poster-upload-field">
+          <label for="event-image-file">Finished poster</label>
+          <input accept="image/jpeg,image/png,image/webp" id="event-image-file" type="file">
+          <input id="event-image-url" type="hidden">
+          <span class="help">PNG, JPEG or WebP, up to 8 MB. Choosing a new file replaces the current poster when you save.</span>
+          <div class="poster-admin-preview" id="image-preview"></div>
+        </div>
+
+        <div class="field">
+          <label for="event-section">Website section</label>
+          <select id="event-section">
+            <option value="future">Upcoming events</option>
+            <option value="past">Past events</option>
+          </select>
+          <span class="help">This controls which tab the poster appears under.</span>
+        </div>
+
+        <div class="field">
+          <label for="event-status">Website visibility</label>
+          <select id="event-status">
+            <option value="draft">Not live</option>
+            <option value="published">Live on website</option>
+            <option value="archived">Archived / hidden</option>
+          </select>
+          <span class="help">Only “Live on website” is visible to the public.</span>
+        </div>
+
+        <div class="field">
+          <label for="event-start">Event date &amp; time, optional</label>
+          <input id="event-start" type="datetime-local">
+        </div>
+
+        <div class="field">
+          <label for="event-location">Location, optional</label>
+          <input id="event-location">
+        </div>
+
+        <div class="field full">
+          <label for="event-poster-alt">Poster description for accessibility</label>
+          <input id="event-poster-alt" placeholder="e.g. Project Golden Child family ice skating event poster">
+        </div>
+
+        <div class="field full">
+          <label for="event-booking">Booking or information link, optional</label>
+          <input id="event-booking" type="url">
+        </div>
+
+        <div class="field full">
+          <label for="event-summary">Short website note, optional</label>
+          <textarea id="event-summary" maxlength="650" placeholder="The poster can contain the full details. Add a short note here only if it helps."></textarea>
+        </div>
+      </div>
+
+      <details class="advanced-event-details">
+        <summary>Advanced event details</summary>
+        <div class="field-grid advanced-event-grid">
+          <div class="field">
+            <label for="event-end">End date &amp; time</label>
+            <input id="event-end" type="datetime-local">
+          </div>
+
+          <div class="field">
+            <label for="event-category">Category</label>
+            <select id="event-category">
+              <option>Awareness</option>
+              <option>Recognition</option>
+              <option>Community</option>
+              <option>Fundraising</option>
+              <option>Family experience</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="event-max">Maximum places</label>
+            <input id="event-max" min="0" type="number">
+          </div>
+
+          <div class="field">
+            <label for="event-children">Children attending</label>
+            <input id="event-children" min="0" type="number" value="0">
+          </div>
+
+          <div class="field">
+            <label for="event-family">Total family members reached</label>
+            <input id="event-family" min="0" type="number" value="0">
+          </div>
+
+          <div class="field">
+            <label for="event-value">Value of support (£)</label>
+            <input id="event-value" min="0" step="0.01" type="number" value="0">
+          </div>
+
+          <div class="field full">
+            <label for="event-body">Full public story / information, optional</label>
+            <textarea class="large-textarea" id="event-body"></textarea>
+          </div>
+
+          <div class="field full">
+            <label>Additional public gallery</label>
+            <div class="upload-row">
+              <input accept="image/jpeg,image/png,image/webp" id="event-gallery-files" multiple type="file">
+              <button class="btn btn-outline" id="upload-gallery" type="button">Upload gallery photos</button>
+            </div>
+            <span class="help">Optional. Save the event first, then add approved photographs.</span>
+            <div class="gallery-preview" id="gallery-preview"></div>
+          </div>
+        </div>
+
+        <hr class="admin-rule">
+
+        <div class="ai-box">
+          <span class="eyebrow">Event story assistant</span>
+          <h3>Turn your notes into a first draft.</h3>
+          <p class="small">This is optional and separate from the poster. Nothing is published automatically.</p>
+          <div class="field-grid">
+            <div class="field">
+              <label for="ai-attendees">Who attended / how many?</label>
+              <input id="ai-attendees">
+            </div>
+            <div class="field">
+              <label for="ai-aim">What was the aim?</label>
+              <input id="ai-aim">
+            </div>
+            <div class="field full">
+              <label for="ai-notes">What happened?</label>
+              <textarea id="ai-notes"></textarea>
+              <div class="voice-actions">
+                <button class="btn btn-outline" id="dictate-notes" type="button">Start dictation</button>
+                <span class="small" id="dictation-state"></span>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-gold" id="generate-story" type="button">Generate draft</button>
+        </div>
+      </details>
+
+      <div class="error-box" hidden id="event-error"></div>
+
+      <div class="form-actions poster-save-actions">
+        <button class="btn btn-danger" id="delete-event" type="button" hidden>Delete event</button>
+        <span class="small" id="event-save-state"></span>
+        <button class="btn btn-primary" type="submit">Save event</button>
+      </div>
+    </form>
+  </div>
+</section>
+
 <section class="admin-section" data-section="go-gold"><div class="admin-top"><div><span class="eyebrow">September 2027</span><h2>Go Gold registrations</h2></div><button class="btn btn-outline" data-refresh="go-gold">Refresh</button></div><div class="admin-list" id="go-gold-list"></div></section>
 <section class="admin-section" data-section="contacts"><div class="admin-top"><div><span class="eyebrow">Website</span><h2>Messages</h2></div><button class="btn btn-outline" data-refresh="contacts">Refresh</button></div><div class="admin-list" id="contacts-list"></div></section>
 </main></div></div><script src="/admin/admin.js"></script></body></html>

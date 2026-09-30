@@ -1,3 +1,17 @@
+# v2.2.0 — Poster-led Events publishing
+
+- Rebuilt Events admin around finished poster uploads rather than code changes.
+- Admin can upload a poster, choose Upcoming or Past events and choose whether it is Live, Not live or Archived.
+- Saving a new live event is transactional from the user's perspective: the record is created privately, the poster is uploaded, then the event is made live.
+- Public Events pages now display the actual poster prominently in both Upcoming and Past sections.
+- Posters can be opened at full size directly from the website.
+- Added optional event date, location, booking link, website note and accessibility description.
+- Existing detailed event metrics, galleries and event-story drafting remain available under Advanced event details.
+- Increased event image allowance from 3 MB to 8 MB.
+- Added a built-in ChatGPT poster prompt with a one-click Copy prompt button.
+- Added `display_section` and `poster_alt` to the canonical event data model.
+- System Health now checks the new event fields and requires schema v2.2.0.
+
 # v2.1.2 — Improved physically plausible cape logo
 
 - Replaced the website master logo with the newly approved Project Golden Child cape artwork.
