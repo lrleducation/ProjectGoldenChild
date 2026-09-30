@@ -1,6 +1,7 @@
 const { json } = require('../lib/http');
 const { requireAdmin } = require('../lib/security');
 const store = require('../lib/store');
+const {getSupabaseAdmin}=require('../lib/supabase-admin');
 
 const REQUIRED_COLUMNS = {
   referrals: [
@@ -58,13 +59,32 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  const ok = tableReadOk && write.ok && version === '2.3.0';
+  let storage={ok:false,detail:''};
+  try{
+    const supabase=getSupabaseAdmin();
+    const {data,error}=await supabase.storage.getBucket('event-public');
+    if(error) throw error;
+    storage={
+      ok:Boolean(data?.id === 'event-public'),
+      public:Boolean(data?.public),
+      fileSizeLimit:Number(data?.file_size_limit || 0),
+      allowedMimeTypes:data?.allowed_mime_types || []
+    };
+  }catch(err){
+    storage={
+      ok:false,
+      detail:err?.message || String(err)
+    };
+  }
+
+  const ok = tableReadOk && write.ok && storage.ok && version === '2.3.1';
 
   return json(res,200,{
     ok,
     schemaVersion:version,
     checks,
     write,
+    storage,
     physicalTables:store.TABLE_MAP,
     configuration:{
       databaseConfigured:store.configured(),

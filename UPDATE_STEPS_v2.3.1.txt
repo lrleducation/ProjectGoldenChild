@@ -1,0 +1,33 @@
+PROJECT GOLDEN CHILD v2.3.1 — IMAGE UPLOAD FIX
+
+WHY THE OLD UPLOADER FAILED
+The v2.3.0 uploader converted the image to base64 and sent the full file through a Vercel
+Function before Supabase. Vercel Functions have a 4.5 MB request-body limit. Base64 also makes
+a file about one-third larger, so an uploader advertised as supporting 8 MB could never
+reliably support an 8 MB image through that route.
+
+v2.3.1 changes the architecture:
+1. Admin asks the secure server for a short-lived signed Supabase upload URL.
+2. The actual image goes directly from your browser to Supabase Storage.
+3. The Supabase secret key never reaches the browser.
+4. The server verifies the file exists and attaches its public URL to the event.
+
+INSTALL
+1. Supabase → SQL Editor → New query.
+2. Run: supabase/UPDATE_v2.3.1_STORAGE.sql
+3. Confirm the result shows:
+     event-public | public = true | file_size_limit = 15728640
+4. Replace the website with this v2.3.1 package, keeping the hidden .git folder.
+5. GitHub Desktop commit:
+     Project Golden Child v2.3.1 direct storage upload
+6. Commit to main → Push origin.
+7. Wait for Vercel to show Ready.
+8. Hard refresh /admin once with Ctrl+F5 because the upload JavaScript has changed.
+9. Admin → System Health → Check now.
+10. Confirm:
+     Database ready — schema 2.3.1. Read and write checks passed.
+     event image storage: OK
+11. Test with a fictional event and a small poster first, then a normal high-resolution poster.
+
+NO NEW VERCEL VARIABLES ARE REQUIRED.
+The existing SUPABASE_URL and SUPABASE_SECRET_KEY are used server-side.

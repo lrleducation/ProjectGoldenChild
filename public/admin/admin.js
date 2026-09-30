@@ -697,13 +697,6 @@
     $('#event-editor').hidden=true;
   });
 
-  const fileToBase64 = file => new Promise((resolve,reject) => {
-    const reader=new FileReader();
-    reader.onload=() => resolve(String(reader.result).split(',')[1]);
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
-  });
-
   $('#event-image-file')?.addEventListener('change',event => {
     const file=event.target.files?.[0];
     if(!file) return;
@@ -711,16 +704,67 @@
     renderPosterPreview(localUrl,$('#event-poster-alt').value);
   });
 
-  async function uploadEventPoster(eventId,file) {
-    const upload=await api('/api/admin-upload',{
+  async function uploadFileDirect({eventId,file,kind,altText='',caption=''}) {
+    if(!file) throw new Error('Choose an image first.');
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){
+      throw new Error('Use a PNG, JPEG or WebP image.');
+    }
+    if(file.size > 15*1024*1024){
+      throw new Error('Images must be under 15 MB.');
+    }
+
+    const sign=await api('/api/admin-upload-sign',{
       method:'POST',
       body:{
         event_id:eventId,
-        kind:'poster',
+        kind,
+        file_name:file.name,
+        file_size:file.size,
         mime_type:file.type,
-        alt_text:$('#event-poster-alt').value,
-        base64:await fileToBase64(file)
+        photo_consent_confirmed:kind==='gallery' && $('#event-photo-consent').checked
       }
+    });
+
+    // The large binary file goes directly from the administrator's browser
+    // to Supabase Storage. It never passes through a Vercel Function.
+    const uploadResponse=await fetch(sign.signedUrl,{
+      method:'PUT',
+      headers:{
+        'Content-Type':file.type,
+        'cache-control':'max-age=3600',
+        'x-upsert':'false'
+      },
+      body:file
+    });
+
+    if(!uploadResponse.ok){
+      const detail=await uploadResponse.text().catch(()=> '');
+      console.error('Direct storage upload failed',uploadResponse.status,detail);
+      throw new Error(
+        `Storage upload failed (${uploadResponse.status}). ${detail || 'Please try again.'}`
+      );
+    }
+
+    return await api('/api/admin-upload-complete',{
+      method:'POST',
+      body:{
+        event_id:eventId,
+        kind,
+        path:sign.path,
+        alt_text:altText,
+        caption,
+        photo_consent_confirmed:kind==='gallery' && $('#event-photo-consent').checked,
+        photo_consent_note:kind==='gallery' ? $('#event-photo-consent-note').value : ''
+      }
+    });
+  }
+
+  async function uploadEventPoster(eventId,file) {
+    const upload=await uploadFileDirect({
+      eventId,
+      file,
+      kind:'poster',
+      altText:$('#event-poster-alt').value
     });
     return upload.url;
   }
@@ -836,25 +880,24 @@
     const state=$('#event-save-state');
     state.textContent='Uploading photographs…';
 
+    let completed=0;
     for(const file of files){
       try{
-        await api('/api/admin-upload',{
-          method:'POST',
-          body:{
-            event_id:id,
-            kind:'gallery',
-            mime_type:file.type,
-            photo_consent_confirmed:true,
-            photo_consent_note:$('#event-photo-consent-note').value,
-            base64:await fileToBase64(file)
-          }
+        state.textContent=`Uploading photograph ${completed+1} of ${files.length}…`;
+        await uploadFileDirect({
+          eventId:id,
+          file,
+          kind:'gallery',
+          altText:`${$('#event-title').value || 'Project Golden Child event'} photograph`
         });
+        completed++;
       }catch(err){
+        console.error('Gallery upload failed',err);
         alert(`${file.name}: ${err.message}`);
       }
     }
 
-    state.textContent='Photographs uploaded';
+    state.textContent=`${completed} photograph${completed===1?'':'s'} uploaded`;
     await loadEvents();
     const refreshed=eventCache.find(item => item.id===id);
     if(refreshed) openEvent(refreshed);

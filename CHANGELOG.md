@@ -1,3 +1,18 @@
+# v2.3.1 — Direct Supabase event-image uploads
+
+- Replaced base64 image uploads through Vercel Functions with signed direct uploads to Supabase Storage.
+- Large poster/photo binaries no longer pass through the Vercel Function request body.
+- This removes the 4.5 MB Vercel Function payload bottleneck and the extra ~33% base64 size inflation.
+- Poster and gallery uploads now support PNG, JPEG and WebP up to 15 MB.
+- The server creates a short-lived signed upload URL only after the user has passed Project Golden Child admin authentication.
+- The browser uploads directly to the exact signed Supabase object path, without exposing the Supabase secret key.
+- A second secure admin API call verifies that the object exists before attaching it to the event database record.
+- Gallery photograph permission checks remain enforced before signing and before finalising the upload.
+- System Health now checks the `event-public` Storage bucket as well as the database.
+- Upload failures now expose the actual Storage HTTP status to the administrator rather than only “Image upload failed”.
+- Added CSP permission for direct connections to Supabase Storage.
+- Schema/version marker is now 2.3.1.
+
 # v2.3.0 — Event reviews, photographs and AI-assisted drafting
 
 - Added a complete after-event review workflow inside Events admin.
