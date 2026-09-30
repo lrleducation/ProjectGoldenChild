@@ -725,23 +725,33 @@
       }
     });
 
-    // The large binary file goes directly from the administrator's browser
-    // to Supabase Storage. It never passes through a Vercel Function.
+    // Supabase's signed-upload endpoint expects PUT. For Blob/File uploads
+    // its own storage client uses FormData, so PGC now mirrors that wire
+    // format exactly. The browser sets the multipart boundary automatically.
+    const form=new FormData();
+    form.append('cacheControl','3600');
+    form.append('',file,file.name || 'image');
+
     const uploadResponse=await fetch(sign.signedUrl,{
       method:'PUT',
       headers:{
-        'Content-Type':file.type,
-        'cache-control':'max-age=3600',
         'x-upsert':'false'
       },
-      body:file
+      body:form
     });
 
     if(!uploadResponse.ok){
       const detail=await uploadResponse.text().catch(()=> '');
       console.error('Direct storage upload failed',uploadResponse.status,detail);
+
+      let readable=detail;
+      try{
+        const parsed=JSON.parse(detail);
+        readable=parsed.message || parsed.error || detail;
+      }catch{}
+
       throw new Error(
-        `Storage upload failed (${uploadResponse.status}). ${detail || 'Please try again.'}`
+        `Storage upload failed (${uploadResponse.status}). ${readable || 'Please try again.'}`
       );
     }
 

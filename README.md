@@ -1,3 +1,9 @@
+# v2.4.0 Storage transport
+
+Event posters and photographs now use a raw Supabase Storage transport that understands
+new `sb_secret_*` API keys correctly. The event-image path no longer depends on
+`@supabase/supabase-js`, and no additional database migration is required beyond schema v2.3.2.
+
 # v2.3.0 event review workflow
 
 The Events system now supports poster promotion before an event and a separate approved review afterwards, including event photographs, outcome figures, voice-note transcription and optional AI-assisted drafting.

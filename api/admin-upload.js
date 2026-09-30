@@ -6,6 +6,6 @@ module.exports=async function(req,res){
   if(!user) return;
 
   return json(res,410,{
-    message:'The image uploader has been upgraded. Refresh the admin page (Ctrl+F5) and try again.'
+    message:'Your browser is running an old Project Golden Child uploader. Press Ctrl+F5 once and try again.'
   });
 };

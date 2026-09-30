@@ -1,3 +1,16 @@
+# v2.4.0 — Final Storage transport rebuild
+
+- Removed `@supabase/supabase-js` from the event-image Storage path entirely.
+- Storage signing now uses Supabase's raw Storage HTTP API with explicit API-key handling.
+- New `sb_secret_*` keys are sent only in the `apikey` header and are never incorrectly treated as JWT bearer tokens.
+- Legacy service-role JWT keys remain supported automatically as a fallback when configured.
+- Signed upload creation, System Health and real poster/photo uploads now use the same transport code.
+- The browser upload now mirrors Supabase Storage's signed-upload wire format: `PUT` plus `FormData`.
+- Poster/photo completion verifies the finished object through the public bucket URL rather than requiring another privileged Storage list operation.
+- Storage errors now preserve the actual HTTP status and safe error message for administrators.
+- Removed the loose `@supabase/supabase-js: ^2.0.0` dependency, eliminating SDK-version/build-cache ambiguity from event uploads.
+- No additional Supabase schema migration is required. Database schema remains v2.3.2.
+
 # v2.3.2 — Storage signing permissions repair
 
 - Explicitly grants `service_role` the Storage table privileges required to create signed upload URLs.

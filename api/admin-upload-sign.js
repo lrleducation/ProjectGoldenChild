@@ -3,7 +3,11 @@ const path=require('node:path');
 const {json,readBody,cleanText,bool}=require('../lib/http');
 const {requireAdmin}=require('../lib/security');
 const store=require('../lib/store');
-const {getSupabaseAdmin,publicObjectUrl}=require('../lib/supabase-admin');
+const {
+  createSignedUploadUrl,
+  publicObjectUrl,
+  safeDiagnostic
+}=require('../lib/supabase-storage');
 
 const allowed={
   'image/jpeg':'jpg',
@@ -16,6 +20,22 @@ function safeName(value){
     .replace(/[^a-zA-Z0-9._-]+/g,'-')
     .replace(/^-+|-+$/g,'')
     .slice(0,90) || 'image';
+}
+
+function friendlyStorageMessage(err){
+  const status=Number(err?.status)||0;
+
+  if(status===401){
+    return 'Supabase rejected the Storage server key. Check SUPABASE_SECRET_KEY in Vercel and redeploy.';
+  }
+  if(status===403){
+    return 'Supabase accepted the project but refused Storage upload permission. Run System Health for the exact Storage response.';
+  }
+  if(status===404){
+    return 'The event-public Storage bucket could not be found.';
+  }
+
+  return 'The image store could not prepare the upload. Run System Health for the exact Storage response.';
 }
 
 module.exports=async function(req,res){
@@ -34,23 +54,18 @@ module.exports=async function(req,res){
     if(!eventId){
       return json(res,400,{message:'Save the event before uploading images.'});
     }
-
     if(!ext){
       return json(res,400,{message:'Use a PNG, JPEG or WebP image.'});
     }
-
     if(!Number.isFinite(fileSize) || fileSize<=0){
       return json(res,400,{message:'The selected image could not be read.'});
     }
-
     if(fileSize > 15*1024*1024){
       return json(res,400,{message:'Images must be under 15 MB.'});
     }
 
     const event=await store.get('events',eventId);
-    if(!event){
-      return json(res,404,{message:'Event not found.'});
-    }
+    if(!event) return json(res,404,{message:'Event not found.'});
 
     if(kind==='gallery'){
       const confirmed=
@@ -68,39 +83,28 @@ module.exports=async function(req,res){
     const stem=path.basename(original,path.extname(original)).slice(0,55) || kind;
     const objectPath=`events/${eventId}/${kind}/${Date.now()}-${crypto.randomUUID()}-${stem}.${ext}`;
 
-    const supabase=getSupabaseAdmin();
-    const {data,error}=await supabase.storage
-      .from('event-public')
-      .createSignedUploadUrl(objectPath);
-
-    if(error || !data?.signedUrl){
-      const diagnostic={
-        message:error?.message || 'No signed upload URL was returned.',
-        statusCode:error?.statusCode || error?.status || 0,
-        error:error?.error || '',
-        bucket:'event-public'
-      };
-      console.error('Create signed upload URL failed',diagnostic);
-
-      return json(res,503,{
-        message:'The image store could not prepare an upload. Check Storage in System Health.',
-        diagnostic
-      });
-    }
+    const signed=await createSignedUploadUrl('event-public',objectPath);
 
     return json(res,200,{
-      signedUrl:data.signedUrl,
+      signedUrl:signed.signedUrl,
       path:objectPath,
-      publicUrl:publicObjectUrl(objectPath),
+      publicUrl:publicObjectUrl('event-public',objectPath),
       contentType:mimeType,
-      maxBytes:15*1024*1024
+      maxBytes:15*1024*1024,
+      storageAuth:signed.keyType
     });
   }catch(err){
-    console.error('Upload signing error',err);
+    const diagnostic=safeDiagnostic(err);
+    console.error('Upload signing error',diagnostic);
+
     const message=
       err.message==='SUPABASE_STORAGE_NOT_CONFIGURED'
         ? 'Supabase Storage is not configured on the server.'
-        : 'The image upload could not be prepared.';
-    return json(res,503,{message});
+        : friendlyStorageMessage(err);
+
+    return json(res,503,{
+      message,
+      diagnostic
+    });
   }
 };

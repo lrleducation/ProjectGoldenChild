@@ -1,0 +1,64 @@
+PROJECT GOLDEN CHILD v2.4.0 — FINAL STORAGE FIX
+
+WHAT CHANGED
+
+This is not another Storage-permission patch.
+
+The database/bucket work from v2.3.2 is retained. The failing mechanism has been removed.
+
+The previous uploader used @supabase/supabase-js to create the signed upload URL. Your project
+uses a new-format Supabase secret key (sb_secret_...). New secret keys are API keys, not JWTs.
+v2.4.0 removes the SDK from the Storage path and talks to Supabase Storage directly:
+
+  new secret key -> apikey header only
+  legacy service-role JWT -> apikey + Authorization Bearer
+
+The actual image still uploads directly from your browser to Supabase, so high-resolution
+posters and event photographs do not pass through Vercel.
+
+The browser now also sends the signed upload as PUT + FormData, matching Supabase Storage's
+own JavaScript client implementation.
+
+INSTALLATION
+
+1. DO NOT run another Supabase SQL migration.
+   Your database schema should remain v2.3.2.
+
+2. Replace the current website files with the v2.4.0 package.
+   Keep the hidden .git folder.
+
+3. GitHub Desktop commit:
+   Project Golden Child v2.4.0 final storage transport rebuild
+
+4. Commit to main -> Push origin.
+
+5. Wait for Vercel to show Ready.
+
+6. On /admin press Ctrl+F5 ONCE.
+   This matters because the upload JavaScript has changed.
+
+7. Admin -> System Health -> Check now.
+
+EXPECTED:
+   Database ready — schema 2.3.2. Read and write checks passed.
+   event image bucket: OK
+   signed image uploads: OK
+   storage authentication: secret
+
+8. Upload a test poster.
+
+IF SYSTEM HEALTH IS NOT GREEN
+
+The page now shows the actual Storage HTTP status and safe error response.
+
+401:
+  The value in Vercel SUPABASE_SECRET_KEY is not the current Supabase secret key.
+
+403:
+  Supabase accepted the key but refused the Storage operation.
+
+404:
+  The event-public bucket does not exist.
+
+NO NEW ENVIRONMENT VARIABLES ARE REQUIRED.
+NO NEW SUPABASE SQL IS REQUIRED.

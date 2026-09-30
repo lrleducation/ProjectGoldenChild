@@ -1,6 +1,6 @@
 {
   "name": "project-golden-child",
-  "version": "2.3.2",
+  "version": "2.4.0",
   "private": true,
   "description": "Project Golden Child public website and secure administration system",
   "engines": {
@@ -10,8 +10,5 @@
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "admin:user": "node scripts/create-admin-user.mjs"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.0.0"
   }
 }

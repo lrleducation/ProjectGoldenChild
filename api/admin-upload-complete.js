@@ -2,28 +2,14 @@ const {json,readBody,cleanText,bool}=require('../lib/http');
 const {requireAdmin}=require('../lib/security');
 const store=require('../lib/store');
 const {audit}=require('../lib/audit');
-const {getSupabaseAdmin,publicObjectUrl}=require('../lib/supabase-admin');
+const {
+  publicObjectUrl,
+  verifyPublicObject
+}=require('../lib/supabase-storage');
 
 function pathBelongsToEvent(objectPath,eventId,kind){
   const expected=`events/${eventId}/${kind}/`;
   return String(objectPath || '').startsWith(expected);
-}
-
-async function verifyObject(objectPath){
-  const supabase=getSupabaseAdmin();
-  const pieces=String(objectPath).split('/');
-  const filename=pieces.pop();
-  const folder=pieces.join('/');
-
-  const {data,error}=await supabase.storage
-    .from('event-public')
-    .list(folder,{
-      limit:10,
-      search:filename
-    });
-
-  if(error) throw error;
-  return Array.isArray(data) && data.some(item=>item.name===filename);
 }
 
 module.exports=async function(req,res){
@@ -69,14 +55,14 @@ module.exports=async function(req,res){
       }
     }
 
-    const exists=await verifyObject(objectPath);
-    if(!exists){
+    const verified=await verifyPublicObject('event-public',objectPath,{attempts:6});
+    if(!verified.ok){
       return json(res,409,{
-        message:'The upload did not complete in storage. Please choose the image and try again.'
+        message:`The file upload finished but the image is not readable from Storage yet (HTTP ${verified.status || 'unknown'}). Please try the upload again.`
       });
     }
 
-    const imageUrl=publicObjectUrl(objectPath);
+    const imageUrl=publicObjectUrl('event-public',objectPath);
 
     if(kind==='gallery'){
       const item=await store.insert('event_gallery',{
@@ -109,7 +95,7 @@ module.exports=async function(req,res){
   }catch(err){
     console.error('Upload completion error',err);
     return json(res,503,{
-      message:'The image reached storage but could not be attached to the event. Please try again.'
+      message:'The image uploaded but could not be attached to the event. Please try again.'
     });
   }
 };

@@ -1,7 +1,7 @@
 const { json } = require('../lib/http');
 const { requireAdmin } = require('../lib/security');
 const store = require('../lib/store');
-const {getSupabaseAdmin}=require('../lib/supabase-admin');
+const {getBucket,createSignedUploadUrl,safeDiagnostic}=require('../lib/supabase-storage');
 
 const REQUIRED_COLUMNS = {
   referrals: [
@@ -59,21 +59,26 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  let storage={ok:false,bucketOk:false,signingOk:false,detail:''};
+  let storage={
+    ok:false,
+    bucketOk:false,
+    signingOk:false,
+    detail:'',
+    status:0,
+    authMode:''
+  };
+
   try{
-    const supabase=getSupabaseAdmin();
-
-    const {data:bucket,error:bucketError}=await supabase.storage.getBucket('event-public');
-    if(bucketError) throw bucketError;
-
+    const bucketResult=await getBucket('event-public');
+    const bucket=bucketResult.bucket || {};
     const bucketOk=Boolean(bucket?.id === 'event-public');
 
-    const probePath=`health/${Date.now()}-signed-upload-check.png`;
-    const {data:signed,error:signError}=await supabase.storage
-      .from('event-public')
-      .createSignedUploadUrl(probePath);
+    const signed=await createSignedUploadUrl(
+      'event-public',
+      `health/${Date.now()}-signed-upload-check.png`
+    );
 
-    const signingOk=Boolean(!signError && signed?.signedUrl);
+    const signingOk=Boolean(signed?.signedUrl);
 
     storage={
       ok:bucketOk && signingOk,
@@ -82,14 +87,19 @@ module.exports = async function(req,res){
       public:Boolean(bucket?.public),
       fileSizeLimit:Number(bucket?.file_size_limit || 0),
       allowedMimeTypes:bucket?.allowed_mime_types || [],
-      detail:signError?.message || ''
+      detail:'',
+      status:200,
+      authMode:signed?.keyType || bucketResult?.keyType || ''
     };
   }catch(err){
+    const diagnostic=safeDiagnostic(err);
     storage={
       ok:false,
       bucketOk:false,
       signingOk:false,
-      detail:err?.message || String(err)
+      detail:diagnostic.detail,
+      status:diagnostic.status,
+      authMode:diagnostic.keyType
     };
   }
 
