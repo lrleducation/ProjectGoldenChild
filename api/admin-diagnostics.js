@@ -1,7 +1,12 @@
 const { json } = require('../lib/http');
 const { requireAdmin } = require('../lib/security');
 const store = require('../lib/store');
-const {getBucket,createSignedUploadUrl,safeDiagnostic}=require('../lib/supabase-storage');
+const {
+  getBucket,
+  createSignedUploadUrl,
+  safeDiagnostic,
+  urlWasNormalised
+}=require('../lib/supabase-storage');
 
 const REQUIRED_COLUMNS = {
   referrals: [
@@ -89,7 +94,8 @@ module.exports = async function(req,res){
       allowedMimeTypes:bucket?.allowed_mime_types || [],
       detail:'',
       status:200,
-      authMode:signed?.keyType || bucketResult?.keyType || ''
+      authMode:signed?.keyType || bucketResult?.keyType || '',
+      urlNormalised:urlWasNormalised()
     };
   }catch(err){
     const diagnostic=safeDiagnostic(err);
@@ -99,7 +105,8 @@ module.exports = async function(req,res){
       signingOk:false,
       detail:diagnostic.detail,
       status:diagnostic.status,
-      authMode:diagnostic.keyType
+      authMode:diagnostic.keyType,
+      urlNormalised:urlWasNormalised()
     };
   }
 

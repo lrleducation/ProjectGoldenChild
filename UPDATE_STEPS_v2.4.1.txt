@@ -1,0 +1,56 @@
+PROJECT GOLDEN CHILD v2.4.1 — FINAL SUPABASE URL FIX
+
+THE ROOT CAUSE
+
+The website database layer and Storage layer were treating SUPABASE_URL differently.
+
+If Vercel contained:
+  https://YOUR-PROJECT.supabase.co/rest/v1
+
+the database code stripped /rest/v1 and worked.
+
+The Storage code did not strip it, so it constructed:
+  https://YOUR-PROJECT.supabase.co/rest/v1/storage/v1/...
+
+That is not a valid Supabase Storage endpoint and produces a 404 that looks like:
+  “The event-public Storage bucket could not be found.”
+
+v2.4.1 removes that inconsistency. Database and Storage now use one shared URL normaliser.
+
+YOU DO NOT NEED TO RUN ANY MORE SUPABASE SQL.
+
+INSTALL
+
+1. Replace the current website files with the v2.4.1 package.
+2. Keep the hidden .git folder.
+3. GitHub Desktop commit:
+   Project Golden Child v2.4.1 final Supabase URL fix
+4. Commit to main → Push origin.
+5. Wait for Vercel to show Ready.
+6. On /admin press Ctrl+F5 once.
+7. Admin → System Health → Check now.
+
+EXPECTED:
+  Database ready — schema 2.3.2. Read and write checks passed.
+  event image bucket: OK
+  signed image uploads: OK
+  storage authentication: secret
+  Supabase project URL: normalised automatically
+    OR
+  Supabase project URL: project base URL
+
+8. Upload the poster again.
+
+OPTIONAL CLEAN-UP IN VERCEL
+
+The best long-term value for SUPABASE_URL is:
+  https://YOUR-PROJECT.supabase.co
+
+Do not append:
+  /rest/v1
+  /storage/v1
+
+However, v2.4.1 now works even if one of those service paths was pasted into the environment variable.
+
+NO NEW ENVIRONMENT VARIABLES.
+NO NEW SQL.

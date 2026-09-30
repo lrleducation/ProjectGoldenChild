@@ -1,3 +1,12 @@
+# v2.4.1 — Supabase project URL normalisation
+
+- Fixed the root cause of the Storage 404 seen when `SUPABASE_URL` is saved as a Data API URL such as `https://PROJECT.supabase.co/rest/v1`.
+- Database access had silently tolerated that value by stripping `/rest/v1`, while the Storage uploader did not. This meant database tables worked but Storage requests were sent to `/rest/v1/storage/v1/...` and returned 404.
+- Added one shared Supabase URL normaliser used by both the database and Storage layers.
+- The application now accepts the project base URL or a copied `/rest/v1`, `/storage/v1`, `/auth/v1`, `/functions/v1` or `/realtime/v1` service URL and always reduces it to the correct project origin.
+- System Health now reports when the supplied Vercel URL has been normalised automatically.
+- No Supabase SQL migration is required. Schema remains v2.3.2.
+
 # v2.4.0 — Final Storage transport rebuild
 
 - Removed `@supabase/supabase-js` from the event-image Storage path entirely.
