@@ -1,4 +1,4 @@
-const {json,readBody,cleanText}=require('../lib/http');
+const {json,readBody,cleanText,bool}=require('../lib/http');
 const {requireAdmin}=require('../lib/security');
 const {uploadPublicImage}=require('../lib/storage');
 const store=require('../lib/store');
@@ -10,7 +10,6 @@ module.exports=async function(req,res){
   if(req.method!=='POST') return json(res,405,{message:'Method not allowed.'});
 
   try{
-    // Base64 adds overhead, so allow enough request body for an 8 MB image.
     const body=await readBody(req,12*1024*1024);
     const eventId=cleanText(body.event_id,80);
     const kind=body.kind==='gallery'?'gallery':'poster';
@@ -22,6 +21,24 @@ module.exports=async function(req,res){
     const event=await store.get('events',eventId);
     if(!event) return json(res,404,{message:'Event not found.'});
 
+    if(kind==='gallery'){
+      const confirmed=event.photo_consent_confirmed || bool(body.photo_consent_confirmed);
+      if(!confirmed){
+        return json(res,400,{
+          message:'Confirm that publication permission is recorded before uploading event photographs.'
+        });
+      }
+
+      if(!event.photo_consent_confirmed && bool(body.photo_consent_confirmed)){
+        await store.update('events',eventId,{
+          photo_consent_confirmed:true,
+          photo_consent_note:cleanText(body.photo_consent_note,1200),
+          photo_consent_confirmed_at:new Date().toISOString(),
+          photo_consent_confirmed_by:user.email
+        });
+      }
+    }
+
     const imageUrl=await uploadPublicImage({
       base64:body.base64,
       mimeType:cleanText(body.mime_type,80),
@@ -32,7 +49,9 @@ module.exports=async function(req,res){
       const item=await store.insert('event_gallery',{
         event_id:eventId,
         image_url:imageUrl,
-        alt_text:cleanText(body.alt_text,250),
+        alt_text:cleanText(body.alt_text,250) || `${event.title} event photograph`,
+        caption:cleanText(body.caption,500),
+        include_in_review:true,
         sort_order:Number(body.sort_order||0)
       });
       await audit(user,'upload','event_gallery',item.id,{event_id:eventId});
@@ -49,7 +68,7 @@ module.exports=async function(req,res){
     console.error('Event upload error',err);
     const message=
       err.message==='IMAGE_SIZE'
-        ? 'Poster images must be under 8 MB.'
+        ? 'Images must be under 8 MB.'
         : err.message==='UNSUPPORTED_IMAGE_TYPE'
           ? 'Use a PNG, JPEG or WebP image.'
           : 'Image upload failed.';

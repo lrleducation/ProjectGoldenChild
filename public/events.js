@@ -18,7 +18,14 @@
     }).format(new Date(iso));
   };
 
-  const posterCard = (event,{pastEvent=false}={}) => {
+  const paragraphs = text =>
+    esc(text || '')
+      .split(/\n{2,}/)
+      .filter(Boolean)
+      .map(part => `<p>${part.replace(/\n/g,'<br>')}</p>`)
+      .join('');
+
+  const posterCard = event => {
     const date = formatDate(event.start_at);
     const meta = [date,event.location].filter(Boolean).join(' · ');
     const image = event.public_image_url
@@ -28,7 +35,7 @@
       : `<div class="event-poster-placeholder">Poster coming soon</div>`;
 
     return `
-      <article class="poster-event-card${pastEvent?' poster-event-past':''}">
+      <article class="poster-event-card">
         ${image}
         <div class="poster-event-meta">
           <span class="eyebrow">${esc(event.category || 'Project Golden Child')}</span>
@@ -40,6 +47,56 @@
             ${event.booking_url?`<a class="btn btn-gold" href="${esc(event.booking_url)}" target="_blank" rel="noopener">Booking / information</a>`:''}
           </div>
         </div>
+      </article>
+    `;
+  };
+
+  const metric = (value,label) => Number(value||0)>0
+    ? `<div class="review-metric"><strong>${Number(value).toLocaleString('en-GB')}</strong><span>${esc(label)}</span></div>`
+    : '';
+
+  const reviewCard = event => {
+    const date=formatDate(event.start_at);
+    const meta=[date,event.location].filter(Boolean).join(' · ');
+    const gallery=(event.gallery || []).map(image=>`
+      <figure class="event-review-photo">
+        <a href="${esc(image.image_url)}" target="_blank" rel="noopener">
+          <img src="${esc(image.image_url)}" alt="${esc(image.alt_text || `${event.title} event photograph`)}" loading="lazy">
+        </a>
+        ${image.caption?`<figcaption>${esc(image.caption)}</figcaption>`:''}
+      </figure>
+    `).join('');
+
+    return `
+      <article class="event-review-card">
+        <div class="event-review-lead">
+          <div class="event-review-poster">
+            ${event.public_image_url
+              ? `<img src="${esc(event.public_image_url)}" alt="${esc(event.poster_alt || `${event.title} poster`)}" loading="lazy">`
+              : ''}
+          </div>
+          <div class="event-review-copy">
+            <span class="eyebrow">${event.review_published?'Event review':'Past event'}</span>
+            <h3>${esc(event.review_published ? (event.review_title || event.title) : event.title)}</h3>
+            ${meta?`<p class="small"><strong>${esc(meta)}</strong></p>`:''}
+            ${event.review_published && event.review_summary
+              ? `<p class="event-review-summary">${esc(event.review_summary)}</p>`
+              : event.summary
+                ? `<p>${esc(event.summary)}</p>`
+                : ''}
+            ${event.review_published ? `
+              <div class="review-metrics">
+                ${metric(event.people_attending,'people attended')}
+                ${metric(event.children_attending,'children')}
+                ${metric(event.families_attending,'families')}
+                ${metric(event.volunteers_attending,'volunteers / helpers')}
+                ${event.value_support>0?`<div class="review-metric"><strong>£${Number(event.value_support).toLocaleString('en-GB',{maximumFractionDigits:0})}</strong><span>value of support</span></div>`:''}
+              </div>
+              <div class="event-review-body">${paragraphs(event.review_body)}</div>
+            ` : `<p class="small">A public review has not been added for this event.</p>`}
+          </div>
+        </div>
+        ${gallery ? `<div class="event-review-gallery">${gallery}</div>` : ''}
       </article>
     `;
   };
@@ -64,12 +121,12 @@
         });
 
       upcoming.innerHTML = futureEvents.length
-        ? futureEvents.map(event => posterCard(event)).join('')
+        ? futureEvents.map(posterCard).join('')
         : '<div class="loading-card">No upcoming events are live at the moment. New posters will appear here as soon as they are published.</div>';
 
       past.innerHTML = pastEvents.length
-        ? pastEvents.map(event => posterCard(event,{pastEvent:true})).join('')
-        : '<div class="loading-card">No past event posters have been published yet.</div>';
+        ? pastEvents.map(reviewCard).join('')
+        : '<div class="loading-card">No past events have been published yet.</div>';
     })
     .catch(() => {
       upcoming.innerHTML='<div class="loading-card">Event information is temporarily unavailable.</div>';

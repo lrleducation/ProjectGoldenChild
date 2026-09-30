@@ -806,3 +806,110 @@ p{margin:0 0 1rem}
   .poster-event-card{border-radius:16px}
   .poster-event-meta{padding:18px}
 }
+
+
+/* v2.3.0 — published event reviews */
+.event-review-list{
+  display:grid;
+  gap:34px;
+}
+.event-review-card{
+  border:1px solid #e5d6c4;
+  border-radius:24px;
+  overflow:hidden;
+  background:#fffdf9;
+  box-shadow:0 18px 42px rgba(74,45,13,.08);
+}
+.event-review-lead{
+  display:grid;
+  grid-template-columns:minmax(260px,.75fr) minmax(0,1.25fr);
+  gap:0;
+}
+.event-review-poster{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  background:#f4eee4;
+  border-right:1px solid #e5d6c4;
+}
+.event-review-poster img{
+  display:block;
+  width:100%;
+  max-height:760px;
+  object-fit:contain;
+  background:#fff;
+}
+.event-review-copy{
+  padding:34px;
+}
+.event-review-copy h3{
+  margin:.3rem 0 .65rem;
+  font-size:clamp(1.8rem,3vw,2.65rem);
+}
+.event-review-summary{
+  font-size:1.12rem;
+  line-height:1.65;
+  color:#4f3926;
+}
+.review-metrics{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:22px 0;
+}
+.review-metric{
+  min-width:120px;
+  padding:12px 14px;
+  border:1px solid #e9d8bc;
+  border-radius:14px;
+  background:#fff8eb;
+}
+.review-metric strong{
+  display:block;
+  font-size:1.35rem;
+  color:#9a6206;
+}
+.review-metric span{
+  display:block;
+  margin-top:2px;
+  font-size:.82rem;
+  color:#6a5b4b;
+}
+.event-review-body{
+  line-height:1.72;
+}
+.event-review-gallery{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  padding:12px;
+  border-top:1px solid #e5d6c4;
+  background:#f9f4ec;
+}
+.event-review-photo{
+  margin:0;
+  overflow:hidden;
+  border-radius:13px;
+  background:#fff;
+}
+.event-review-photo img{
+  display:block;
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover;
+}
+.event-review-photo figcaption{
+  padding:8px 10px 10px;
+  font-size:.82rem;
+  color:#655443;
+}
+@media(max-width:900px){
+  .event-review-lead{grid-template-columns:1fr}
+  .event-review-poster{border-right:0;border-bottom:1px solid #e5d6c4}
+  .event-review-poster img{max-height:none}
+  .event-review-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .event-review-copy{padding:22px}
+  .event-review-gallery{grid-template-columns:1fr 1fr}
+}

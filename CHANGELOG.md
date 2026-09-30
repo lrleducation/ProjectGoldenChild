@@ -1,3 +1,22 @@
+# v2.3.0 — Event reviews, photographs and AI-assisted drafting
+
+- Added a complete after-event review workflow inside Events admin.
+- Administrators can record total attendance, children attending, families represented, volunteers/helpers, wider family reach and value of support.
+- Event photographs can be uploaded after the event and are linked permanently to that event.
+- Photograph upload now requires an explicit admin confirmation that publication permission has been recorded.
+- Added an optional permission/reference note to support the project's audit trail.
+- Added browser voice-note recording using MediaRecorder.
+- Voice notes can be transcribed securely through the OpenAI API and placed into an editable transcript field.
+- Added AI event-review drafting using the OpenAI Responses API.
+- AI drafting can use typed notes, voice transcript, event details and attendance figures.
+- Approved event photographs can optionally be supplied to the AI as visual context, but this is OFF by default and requires a second explicit confirmation.
+- AI is instructed never to identify people, infer medical/sensitive information, invent attendance figures or create quotations.
+- AI drafts are never published automatically. Administrators edit and approve the review before setting Review visibility to Publish review.
+- Past public events now support a full review, attendance metrics and an approved photo gallery.
+- Upcoming events remain poster-led.
+- Added System Health visibility for whether the AI integration is configured.
+- Schema version is now 2.3.0.
+
 # v2.2.0 — Poster-led Events publishing
 
 - Rebuilt Events admin around finished poster uploads rather than code changes.

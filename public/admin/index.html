@@ -210,8 +210,162 @@ Do not invent dates, prices, contact details or promises that I have not given y
         </div>
       </div>
 
+      
+      <section class="event-review-panel">
+        <div class="editor-head">
+          <div>
+            <span class="eyebrow">After the event</span>
+            <h3>Photos &amp; event review</h3>
+            <p class="small">Upload approved photographs, record what happened, and turn your notes into a polished public review. AI drafts are never published automatically.</p>
+          </div>
+        </div>
+
+        <div class="review-step">
+          <div class="review-step-number">1</div>
+          <div>
+            <h4>Record attendance and outcomes</h4>
+            <div class="field-grid">
+              <div class="field">
+                <label for="event-people">Total people attending</label>
+                <input id="event-people" min="0" type="number" value="0">
+              </div>
+              <div class="field">
+                <label for="event-children">Children attending</label>
+                <input id="event-children" min="0" type="number" value="0">
+              </div>
+              <div class="field">
+                <label for="event-families">Families represented</label>
+                <input id="event-families" min="0" type="number" value="0">
+              </div>
+              <div class="field">
+                <label for="event-volunteers">Volunteers / helpers</label>
+                <input id="event-volunteers" min="0" type="number" value="0">
+              </div>
+              <div class="field">
+                <label for="event-family">Wider family reach</label>
+                <input id="event-family" min="0" type="number" value="0">
+              </div>
+              <div class="field">
+                <label for="event-value">Value of support (£)</label>
+                <input id="event-value" min="0" step="0.01" type="number" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-step">
+          <div class="review-step-number">2</div>
+          <div>
+            <h4>Add event photographs</h4>
+            <p class="small">Photographs are separate from event attendance. Only upload images where the relevant publication permission has been recorded.</p>
+
+            <label class="consent-confirmation">
+              <input id="event-photo-consent" type="checkbox">
+              <span><strong>I confirm we have permission to publish the photographs uploaded for this event.</strong></span>
+            </label>
+
+            <div class="field">
+              <label for="event-photo-consent-note">Permission / consent reference, optional</label>
+              <input id="event-photo-consent-note" placeholder="e.g. Event consent forms recorded by project team">
+            </div>
+
+            <div class="upload-row review-photo-upload">
+              <input accept="image/jpeg,image/png,image/webp" id="event-gallery-files" multiple type="file">
+              <button class="btn btn-outline" id="upload-gallery" type="button">Upload photographs</button>
+            </div>
+            <span class="help">PNG, JPEG or WebP, up to 8 MB each. Save the event first.</span>
+            <div class="gallery-preview review-gallery-preview" id="gallery-preview"></div>
+          </div>
+        </div>
+
+        <div class="review-step ai-review-step">
+          <div class="review-step-number">3</div>
+          <div>
+            <div class="editor-head compact-editor-head">
+              <div>
+                <h4>Tell the AI what happened</h4>
+                <p class="small">Use a voice note or type rough notes. Do not include child names, diagnoses or private family information.</p>
+              </div>
+              <span class="status-pill" id="ai-config-state">Checking AI…</span>
+            </div>
+
+            <div class="field-grid">
+              <div class="field full">
+                <label for="ai-aim">What was the aim of the event?</label>
+                <textarea id="ai-aim" placeholder="e.g. Bring families together for a relaxed afternoon and give children a positive experience away from treatment."></textarea>
+              </div>
+
+              <div class="field full">
+                <label for="ai-notes">Your rough notes</label>
+                <textarea id="ai-notes" placeholder="Write anything useful here. It does not need to be polished."></textarea>
+              </div>
+
+              <div class="field full">
+                <label for="event-review-transcript">Voice note transcript</label>
+                <textarea id="event-review-transcript" placeholder="Record a voice note below, or type/paste a transcript here."></textarea>
+                <div class="voice-recorder">
+                  <button class="btn btn-outline" id="record-voice-note" type="button">Record voice note</button>
+                  <button class="btn btn-outline" id="stop-voice-note" type="button" hidden>Stop &amp; transcribe</button>
+                  <span class="small" id="voice-note-state"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ai-photo-options">
+              <label class="switch-line">
+                <input id="ai-use-photos" type="checkbox">
+                <span>Let AI use up to four approved event photographs as visual context.</span>
+              </label>
+              <label class="consent-confirmation ai-photo-confirmation" id="ai-photo-confirmation" hidden>
+                <input id="ai-photo-permission" type="checkbox">
+                <span>I confirm our permissions allow these photographs to be processed by the AI provider for this draft.</span>
+              </label>
+            </div>
+
+            <div class="ai-review-actions">
+              <button class="btn btn-gold" id="generate-ai-review" type="button">Generate event review</button>
+              <span class="small" id="ai-review-state"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-step">
+          <div class="review-step-number">4</div>
+          <div>
+            <h4>Review, edit and publish</h4>
+            <p class="small">You remain the editor. Check the AI draft, change anything you want, then decide whether the review is public.</p>
+
+            <div class="field-grid">
+              <div class="field full">
+                <label for="event-review-title">Review headline</label>
+                <input id="event-review-title">
+              </div>
+
+              <div class="field full">
+                <label for="event-review-summary">Short review summary</label>
+                <textarea id="event-review-summary" maxlength="1200"></textarea>
+              </div>
+
+              <div class="field full">
+                <label for="event-review-body">Full event review</label>
+                <textarea class="large-textarea" id="event-review-body"></textarea>
+              </div>
+
+              <div class="field">
+                <label for="event-review-status">Review visibility</label>
+                <select id="event-review-status">
+                  <option value="draft">Not public yet</option>
+                  <option value="published">Publish review</option>
+                </select>
+                <span class="help">The event itself can remain live while its review stays private.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <details class="advanced-event-details">
-        <summary>Advanced event details</summary>
+        <summary>Other event details</summary>
         <div class="field-grid advanced-event-grid">
           <div class="field">
             <label for="event-end">End date &amp; time</label>
@@ -234,62 +388,10 @@ Do not invent dates, prices, contact details or promises that I have not given y
             <input id="event-max" min="0" type="number">
           </div>
 
-          <div class="field">
-            <label for="event-children">Children attending</label>
-            <input id="event-children" min="0" type="number" value="0">
-          </div>
-
-          <div class="field">
-            <label for="event-family">Total family members reached</label>
-            <input id="event-family" min="0" type="number" value="0">
-          </div>
-
-          <div class="field">
-            <label for="event-value">Value of support (£)</label>
-            <input id="event-value" min="0" step="0.01" type="number" value="0">
-          </div>
-
           <div class="field full">
-            <label for="event-body">Full public story / information, optional</label>
+            <label for="event-body">Additional public information, optional</label>
             <textarea class="large-textarea" id="event-body"></textarea>
           </div>
-
-          <div class="field full">
-            <label>Additional public gallery</label>
-            <div class="upload-row">
-              <input accept="image/jpeg,image/png,image/webp" id="event-gallery-files" multiple type="file">
-              <button class="btn btn-outline" id="upload-gallery" type="button">Upload gallery photos</button>
-            </div>
-            <span class="help">Optional. Save the event first, then add approved photographs.</span>
-            <div class="gallery-preview" id="gallery-preview"></div>
-          </div>
-        </div>
-
-        <hr class="admin-rule">
-
-        <div class="ai-box">
-          <span class="eyebrow">Event story assistant</span>
-          <h3>Turn your notes into a first draft.</h3>
-          <p class="small">This is optional and separate from the poster. Nothing is published automatically.</p>
-          <div class="field-grid">
-            <div class="field">
-              <label for="ai-attendees">Who attended / how many?</label>
-              <input id="ai-attendees">
-            </div>
-            <div class="field">
-              <label for="ai-aim">What was the aim?</label>
-              <input id="ai-aim">
-            </div>
-            <div class="field full">
-              <label for="ai-notes">What happened?</label>
-              <textarea id="ai-notes"></textarea>
-              <div class="voice-actions">
-                <button class="btn btn-outline" id="dictate-notes" type="button">Start dictation</button>
-                <span class="small" id="dictation-state"></span>
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-gold" id="generate-story" type="button">Generate draft</button>
         </div>
       </details>
 

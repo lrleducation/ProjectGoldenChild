@@ -1,0 +1,61 @@
+PROJECT GOLDEN CHILD v2.3.0 — AI EVENT REVIEW SETUP
+
+WHAT THIS ADDS
+Before the event:
+  Upload poster → choose Upcoming → make Live.
+
+After the event:
+  Move event to Past events.
+  Record attendance/outcome figures.
+  Confirm photography permission.
+  Upload approved photographs.
+  Record a voice note or type rough notes.
+  Generate an AI draft.
+  Edit the draft yourself.
+  Set Review visibility to Publish review.
+  Save.
+
+IMPORTANT PRIVACY DESIGN
+- Event attendance does not equal photography permission.
+- Gallery uploads require an explicit confirmation that publication permission has been recorded.
+- Photographs are NOT sent to the AI by default.
+- If you deliberately choose to use photographs as AI context, the admin must confirm separately that the permissions allow this processing.
+- The AI workflow does not automatically access Harper's Heroes, referral records, diagnoses or other family records.
+- Do not include child names, diagnoses or private family information in voice notes or event-review notes.
+- AI drafts are never automatically published.
+
+SUPABASE
+Run:
+  supabase/UPDATE_v2.3.0.sql
+
+The final query should return ZERO ROWS.
+
+VERCEL — REQUIRED FOR AI
+Add a Production environment variable:
+
+  OPENAI_API_KEY
+  Value: your OpenAI API secret key
+
+Do not put this key into GitHub and do not paste it into a public chat.
+
+OPTIONAL VERCEL VARIABLES
+  OPENAI_REVIEW_MODEL = gpt-5.6-luna
+  OPENAI_TRANSCRIBE_MODEL = gpt-transcribe
+
+If the optional variables are omitted, those values are used automatically.
+
+DEPLOYMENT
+1. Run the Supabase v2.3.0 SQL.
+2. Replace website files with the v2.3.0 package, keeping .git.
+3. GitHub Desktop commit:
+   Project Golden Child v2.3.0 event reviews AI
+4. Push origin.
+5. Wait for Vercel Ready.
+6. Add OPENAI_API_KEY in Vercel if not already added, then redeploy.
+7. Admin → System Health → Check now.
+
+EXPECTED:
+  Database ready — schema 2.3.0. Read and write checks passed.
+  AI event reviews: configured
+
+TEST WITH FICTIONAL DATA FIRST.

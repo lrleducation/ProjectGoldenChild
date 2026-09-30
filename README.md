@@ -1,3 +1,9 @@
+# v2.3.0 event review workflow
+
+The Events system now supports poster promotion before an event and a separate approved review afterwards, including event photographs, outcome figures, voice-note transcription and optional AI-assisted drafting.
+
+AI requires a server-side `OPENAI_API_KEY` in Vercel. The AI does not automatically receive Harper's Heroes or referral data, and photographs are not supplied to AI unless an administrator explicitly opts in for that event.
+
 
 ## v2.1.0 upgrade
 

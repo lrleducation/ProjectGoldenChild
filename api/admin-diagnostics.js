@@ -24,10 +24,15 @@ const REQUIRED_COLUMNS = {
   ],
   events: [
     'id','title','start_at','end_at','location','category','status','max_places','summary','body',
-    'public_image_url','poster_alt','display_section','booking_url','children_attending','family_reach','value_support','published_at',
+    'public_image_url','poster_alt','display_section','booking_url',
+    'children_attending','people_attending','families_attending','volunteers_attending',
+    'family_reach','value_support','published_at',
+    'photo_consent_confirmed','photo_consent_note','photo_consent_confirmed_at','photo_consent_confirmed_by',
+    'review_status','review_title','review_summary','review_body','review_voice_transcript',
+    'review_ai_generated_at','review_published_at',
     'created_at','updated_at'
   ],
-  event_gallery: ['id','event_id','image_url','alt_text','sort_order','created_at','updated_at'],
+  event_gallery: ['id','event_id','image_url','alt_text','caption','include_in_review','sort_order','created_at','updated_at'],
   go_gold_registrations: [
     'id','organisation_name','organisation_type','contact_name','contact_email','postcode','notes',
     'updates','status','admin_notes','created_at','updated_at'
@@ -53,7 +58,7 @@ module.exports = async function(req,res){
   const write = await store.writeProbe();
   const version = await store.schemaVersion();
   const tableReadOk = Object.values(checks).every(result => result.ok);
-  const ok = tableReadOk && write.ok && version === '2.2.0';
+  const ok = tableReadOk && write.ok && version === '2.3.0';
 
   return json(res,200,{
     ok,
@@ -70,7 +75,10 @@ module.exports = async function(req,res){
         process.env.RESEND_API_KEY &&
         process.env.FROM_EMAIL &&
         process.env.NOTIFICATION_EMAIL
-      )
+      ),
+      aiConfigured:Boolean(process.env.OPENAI_API_KEY),
+      aiReviewModel:String(process.env.OPENAI_REVIEW_MODEL || 'gpt-5.6-luna'),
+      aiTranscribeModel:String(process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-transcribe')
     }
   });
 };

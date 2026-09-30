@@ -446,3 +446,103 @@
   .event-poster-admin-thumb img{min-height:115px;max-height:130px}
   .poster-save-actions{position:relative;bottom:auto;margin:20px -20px -20px}
 }
+
+
+/* v2.3.0 — event reviews, photographs and AI drafting */
+.event-review-panel{
+  margin-top:24px;
+  padding-top:24px;
+  border-top:2px solid #ead7b9;
+}
+.review-step{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:16px;
+  padding:22px 0;
+  border-bottom:1px solid #eadfce;
+}
+.review-step:last-child{border-bottom:0}
+.review-step-number{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#b87808;
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 6px 18px rgba(184,120,8,.2);
+}
+.review-step h4{
+  margin:2px 0 12px;
+  font-size:1.12rem;
+  color:#452a0f;
+}
+.consent-confirmation,
+.switch-line{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:13px 14px;
+  border:1px solid #ead7b9;
+  background:#fffaf0;
+  border-radius:12px;
+  margin:12px 0;
+}
+.consent-confirmation input,
+.switch-line input{
+  margin-top:3px;
+  transform:scale(1.15);
+}
+.review-photo-upload{margin-top:12px}
+.review-gallery-preview{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.review-gallery-item{
+  overflow:hidden;
+  border:1px solid #e4d6c4;
+  border-radius:12px;
+  background:#fff;
+}
+.review-gallery-item img{
+  display:block;
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover;
+}
+.review-gallery-item .small{padding:8px}
+.voice-recorder{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.ai-photo-options{
+  margin:10px 0 16px;
+}
+.ai-photo-confirmation{
+  margin-left:24px;
+  border-color:#d7c6aa;
+  background:#f9f5ee;
+}
+.ai-review-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.status-review-live{
+  background:#f0eafd!important;
+  color:#5e3c96!important;
+  border-color:#d7c6ef!important;
+}
+.compact-editor-head{align-items:flex-start}
+@media(max-width:760px){
+  .review-step{grid-template-columns:1fr}
+  .review-step-number{width:34px;height:34px}
+  .review-gallery-preview{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

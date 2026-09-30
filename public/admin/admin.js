@@ -506,9 +506,11 @@
   }
 
   // ------------------------------------------------------------
-  // Events — poster-first publishing
+  // Events — poster promotion + photographs + AI review
   // ------------------------------------------------------------
   let eventCache = [];
+  let mediaRecorder = null;
+  let recordedChunks = [];
 
   const eventVisibilityLabel = status => ({
     draft:'Not live',
@@ -549,6 +551,14 @@
             <div class="event-admin-badges">
               <span class="status-pill ${event.status==='published'?'status-live':''}">${esc(eventVisibilityLabel(event.status))}</span>
               <span class="status-pill">${esc(eventSectionLabel(event.display_section))}</span>
+              ${event.review_status==='published'
+                ? '<span class="status-pill status-review-live">Review live</span>'
+                : event.display_section==='past'
+                  ? '<span class="status-pill">Review draft</span>'
+                  : ''}
+              ${(event.gallery || []).length
+                ? `<span class="status-pill">${event.gallery.length} photo${event.gallery.length===1?'':'s'}</span>`
+                : ''}
             </div>
             <div class="small">${event.start_at ? esc(fmt(event.start_at)) : 'No event date set'}${event.location ? ` · ${esc(event.location)}` : ''}</div>
             <div class="admin-item-actions">
@@ -592,10 +602,19 @@
     summary:'#event-summary',
     body:'#event-body',
     children_attending:'#event-children',
+    people_attending:'#event-people',
+    families_attending:'#event-families',
+    volunteers_attending:'#event-volunteers',
     family_reach:'#event-family',
     value_support:'#event-value',
     booking_url:'#event-booking',
-    public_image_url:'#event-image-url'
+    public_image_url:'#event-image-url',
+    photo_consent_note:'#event-photo-consent-note',
+    review_status:'#event-review-status',
+    review_title:'#event-review-title',
+    review_summary:'#event-review-summary',
+    review_body:'#event-review-body',
+    review_voice_transcript:'#event-review-transcript'
   };
 
   function renderPosterPreview(url,alt='') {
@@ -606,15 +625,40 @@
       : '<div class="poster-preview-empty">Choose a poster file. It will upload when you save.</div>';
   }
 
+  function renderGallery(event) {
+    const gallery=$('#gallery-preview');
+    if(!gallery) return;
+
+    gallery.innerHTML=(event.gallery || []).map(image => `
+      <div class="review-gallery-item">
+        <img src="${esc(image.image_url)}" alt="${esc(image.alt_text || '')}">
+        ${image.caption ? `<div class="small">${esc(image.caption)}</div>` : ''}
+        <button class="gallery-remove" type="button" data-delete-gallery="${image.id}">Remove</button>
+      </div>
+    `).join('');
+
+    $$('[data-delete-gallery]').forEach(button => button.addEventListener('click',async() => {
+      if(!confirm('Remove this photograph from the event?')) return;
+      await api(`/api/admin-events?gallery_id=${encodeURIComponent(button.dataset.deleteGallery)}`,{method:'DELETE'});
+      await loadEvents();
+      const refreshed=eventCache.find(item => item.id === $('#event-id').value);
+      if(refreshed) openEvent(refreshed);
+    }));
+  }
+
   function openEvent(event={}) {
     $('#event-editor').hidden = false;
-    $('#event-editor-title').textContent = event.id ? 'Edit event poster' : 'Add event poster';
+    $('#event-editor-title').textContent = event.id ? 'Edit event' : 'Add event';
 
     const defaults = {
       display_section:'future',
       status:'draft',
       category:'Community',
+      review_status:'draft',
       children_attending:0,
+      people_attending:0,
+      families_attending:0,
+      volunteers_attending:0,
       family_reach:0,
       value_support:0,
       ...event
@@ -628,27 +672,21 @@
       element.value=value;
     }
 
+    $('#event-photo-consent').checked=Boolean(event.photo_consent_confirmed);
     $('#event-image-file').value='';
+    $('#event-gallery-files').value='';
     $('#event-save-state').textContent='';
     $('#event-error').hidden=true;
     $('#delete-event').hidden=!event.id;
 
     renderPosterPreview(event.public_image_url,event.poster_alt);
+    renderGallery(event);
 
-    $('#gallery-preview').innerHTML=(event.gallery || []).map(image => `
-      <div class="gallery-thumb">
-        <img src="${esc(image.image_url)}" alt="">
-        <button class="gallery-remove" type="button" data-delete-gallery="${image.id}">Remove</button>
-      </div>
-    `).join('');
-
-    $$('[data-delete-gallery]').forEach(button => button.addEventListener('click',async() => {
-      if(!confirm('Remove this image from the event gallery?')) return;
-      await api(`/api/admin-events?gallery_id=${encodeURIComponent(button.dataset.deleteGallery)}`,{method:'DELETE'});
-      await loadEvents();
-      const refreshed=eventCache.find(item => item.id === $('#event-id').value);
-      if(refreshed) openEvent(refreshed);
-    }));
+    if(event.review_ai_generated_at){
+      $('#ai-review-state').textContent=`Last AI draft: ${fmt(event.review_ai_generated_at)}`;
+    }else{
+      $('#ai-review-state').textContent='';
+    }
 
     $('#event-editor').scrollIntoView({behavior:'smooth',block:'start'});
   }
@@ -687,18 +725,24 @@
     return upload.url;
   }
 
+  function collectEventPayload(){
+    const payload={};
+    for(const [key,selector] of Object.entries(eventFields)) {
+      const element=$(selector);
+      if(element) payload[key]=element.value;
+    }
+    payload.photo_consent_confirmed=$('#event-photo-consent').checked;
+    payload.review_ai_generated_at=$('#event-review-body').dataset.generatedAt || '';
+    return payload;
+  }
+
   $('#event-editor')?.addEventListener('submit',async event => {
     event.preventDefault();
     $('#event-error').hidden=true;
 
     const selectedFile=$('#event-image-file').files?.[0] || null;
     const intendedStatus=$('#event-status').value;
-    let payload={};
-
-    for(const [key,selector] of Object.entries(eventFields)) {
-      const element=$(selector);
-      if(element) payload[key]=element.value;
-    }
+    let payload=collectEventPayload();
 
     if(!payload.title.trim()){
       return showMessage($('#event-error'),'Add an event title.');
@@ -709,14 +753,15 @@
       return showMessage($('#event-error'),'Choose a poster before making the event live.');
     }
 
+    if(payload.review_status==='published' && payload.display_section!=='past'){
+      return showMessage($('#event-error'),'Move the event to Past events before publishing its review.');
+    }
+
     const state=$('#event-save-state');
 
     try {
       state.textContent='Saving…';
 
-      // A brand-new event that is intended to go live is created privately
-      // first, then the poster is uploaded, then it is made live. This means
-      // the public site never briefly shows an event without its poster.
       if(!payload.id){
         const createPayload={...payload};
         if(selectedFile && intendedStatus==='published'){
@@ -781,7 +826,15 @@
   $('#upload-gallery')?.addEventListener('click',async() => {
     const files=[...$('#event-gallery-files').files];
     const id=$('#event-id').value;
-    if(!files.length || !id) return alert('Save the event first, then choose gallery photos.');
+
+    if(!id) return alert('Save the event first, then upload photographs.');
+    if(!files.length) return alert('Choose one or more photographs.');
+    if(!$('#event-photo-consent').checked){
+      return alert('Confirm that publication permission is recorded before uploading photographs.');
+    }
+
+    const state=$('#event-save-state');
+    state.textContent='Uploading photographs…';
 
     for(const file of files){
       try{
@@ -791,6 +844,8 @@
             event_id:id,
             kind:'gallery',
             mime_type:file.type,
+            photo_consent_confirmed:true,
+            photo_consent_note:$('#event-photo-consent-note').value,
             base64:await fileToBase64(file)
           }
         });
@@ -799,8 +854,10 @@
       }
     }
 
+    state.textContent='Photographs uploaded';
     await loadEvents();
-    openEvent(eventCache.find(item => item.id===id) || {});
+    const refreshed=eventCache.find(item => item.id===id);
+    if(refreshed) openEvent(refreshed);
   });
 
   $('#copy-poster-prompt')?.addEventListener('click',async() => {
@@ -818,36 +875,151 @@
     }
   });
 
-  $('#generate-story')?.addEventListener('click',async() => {
-    try {
-      const data=await api('/api/admin-event-draft',{
+  $('#ai-use-photos')?.addEventListener('change',event => {
+    $('#ai-photo-confirmation').hidden=!event.target.checked;
+    if(!event.target.checked) $('#ai-photo-permission').checked=false;
+  });
+
+  async function updateAiConfigState(){
+    const el=$('#ai-config-state');
+    if(!el) return;
+    try{
+      const d=await api('/api/admin-diagnostics');
+      if(d.configuration?.aiConfigured){
+        el.textContent='AI ready';
+        el.classList.add('status-live');
+      }else{
+        el.textContent='AI not configured';
+        el.classList.remove('status-live');
+      }
+    }catch{
+      el.textContent='AI status unavailable';
+    }
+  }
+
+  $('#generate-ai-review')?.addEventListener('click',async() => {
+    const id=$('#event-id').value;
+    if(!id) return alert('Save the event before generating its review.');
+
+    const includePhotos=$('#ai-use-photos').checked;
+    if(includePhotos && !$('#event-photo-consent').checked){
+      return alert('Confirm the event photography permission first.');
+    }
+    if(includePhotos && !$('#ai-photo-permission').checked){
+      return alert('Confirm that the approved photographs may be processed by the AI provider.');
+    }
+
+    const state=$('#ai-review-state');
+    state.textContent='Generating review…';
+
+    try{
+      const data=await api('/api/admin-event-review-ai',{
         method:'POST',
         body:{
-          attendees:$('#ai-attendees').value,
+          event_id:id,
+          title:$('#event-title').value,
+          start_at:$('#event-start').value,
+          location:$('#event-location').value,
+          category:$('#event-category').value,
           aim:$('#ai-aim').value,
-          notes:$('#ai-notes').value
+          notes:$('#ai-notes').value,
+          transcript:$('#event-review-transcript').value,
+          people_attending:$('#event-people').value,
+          children_attending:$('#event-children').value,
+          families_attending:$('#event-families').value,
+          volunteers_attending:$('#event-volunteers').value,
+          family_reach:$('#event-family').value,
+          value_support:$('#event-value').value,
+          include_photos:includePhotos,
+          ai_photo_permission:includePhotos && $('#ai-photo-permission').checked
         }
       });
-      $('#event-body').value=data.draft;
-    } catch(err) {
+
+      $('#event-review-title').value=data.review_title || '';
+      $('#event-review-summary').value=data.review_summary || '';
+      $('#event-review-body').value=data.review_body || '';
+      $('#event-review-body').dataset.generatedAt=data.generated_at || new Date().toISOString();
+      state.textContent='Draft created. Review and edit it before publishing.';
+    }catch(err){
+      state.textContent='';
       showMessage($('#event-error'),err.message);
     }
   });
 
-  $('#dictate-notes')?.addEventListener('click',() => {
-    const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!Recognition) return alert('Dictation is not supported in this browser.');
+  async function blobToBase64(blob){
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result).split(',')[1]);
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+  }
 
-    const recognition=new Recognition();
-    recognition.lang='en-GB';
-    recognition.interimResults=false;
-    recognition.onstart=() => { $('#dictation-state').textContent='Listening…'; };
-    recognition.onresult=event => {
-      $('#ai-notes').value += ($('#ai-notes').value ? ' ' : '') + event.results[0][0].transcript;
-    };
-    recognition.onend=() => { $('#dictation-state').textContent=''; };
-    recognition.start();
+  $('#record-voice-note')?.addEventListener('click',async() => {
+    if(!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder){
+      return alert('Voice recording is not supported in this browser. You can type into the transcript box instead.');
+    }
+
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      recordedChunks=[];
+      mediaRecorder=new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable=event => {
+        if(event.data?.size) recordedChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop=async() => {
+        stream.getTracks().forEach(track=>track.stop());
+        const blob=new Blob(recordedChunks,{
+          type:mediaRecorder.mimeType || 'audio/webm'
+        });
+
+        const state=$('#voice-note-state');
+        state.textContent='Transcribing…';
+
+        try{
+          const data=await api('/api/admin-event-transcribe',{
+            method:'POST',
+            body:{
+              event_id:$('#event-id').value,
+              mime_type:blob.type || 'audio/webm',
+              base64:await blobToBase64(blob)
+            }
+          });
+
+          const current=$('#event-review-transcript').value.trim();
+          $('#event-review-transcript').value=
+            current ? `${current}
+
+${data.transcript}` : data.transcript;
+          state.textContent='Voice note transcribed. You can edit the text before generating the review.';
+        }catch(err){
+          state.textContent='';
+          showMessage($('#event-error'),err.message);
+        }
+
+        $('#record-voice-note').hidden=false;
+        $('#stop-voice-note').hidden=true;
+      };
+
+      mediaRecorder.start();
+      $('#record-voice-note').hidden=true;
+      $('#stop-voice-note').hidden=false;
+      $('#voice-note-state').textContent='Recording…';
+    }catch{
+      alert('Microphone access was not available. You can type your notes instead.');
+    }
   });
+
+  $('#stop-voice-note')?.addEventListener('click',() => {
+    if(mediaRecorder && mediaRecorder.state!=='inactive'){
+      $('#voice-note-state').textContent='Finishing recording…';
+      mediaRecorder.stop();
+    }
+  });
+
+  updateAiConfigState();
 
   // ------------------------------------------------------------
   // Go Gold
