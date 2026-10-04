@@ -14,3 +14,9 @@ The production API fails closed if Supabase is not configured. Do not accept rea
 ## v2.5.0 email and appointment settings
 
 For platform email and appointment reminders also configure `RESEND_API_KEY`, `FROM_EMAIL`, `NOTIFICATION_EMAIL`, optional `REPLY_TO_EMAIL`, optional `APPOINTMENT_ADMIN_EMAIL`, and a long random `CRON_SECRET`. Existing live databases must run `supabase/UPDATE_v2.5.0.sql` before the v2.5.0 code is deployed.
+
+## v2.6.0 selected-recipient communications and attachments
+
+For an existing v2.5.x deployment, run `supabase/UPDATE_v2.6.0.sql` against the live Supabase project before deploying the v2.6.0 code. This creates the private `communication-attachments` bucket and adds attachment audit fields to `pgc_communications`. No new Vercel environment variables are required beyond the existing Supabase and Resend configuration.
+
+After deployment, open Admin → Dashboard → System Health. Schema `2.6.0`, event storage and communication attachments must all report OK before using poster attachments with real families.

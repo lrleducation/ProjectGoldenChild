@@ -135,6 +135,8 @@
           `${key}: ${value.ok ? 'OK' : `${value.code || value.status || 'error'} ${value.detail || ''}`}`
         );
         checks.push(`write test: ${d.write?.ok ? 'OK' : `${d.write?.code || d.write?.status || 'error'} ${d.write?.detail || ''}`}`);
+        checks.push(`event storage: ${d.storage?.ok ? 'OK' : `${d.storage?.status || 'error'} ${d.storage?.detail || 'bucket/signing check failed'}`}`);
+        checks.push(`communication attachments: ${d.communicationStorage?.ok ? 'OK' : `${d.communicationStorage?.status || 'error'} ${d.communicationStorage?.detail || 'bucket/signing check failed'}`}`);
         checks.push(`email alerts: ${d.configuration?.emailConfigured ? 'configured' : 'not configured (database submissions still save)'}`);
         detail.textContent = checks.join(' · ');
       }
@@ -415,6 +417,7 @@
   // Communications
   // ------------------------------------------------------------
   let communicationsCache = {items:[],heroes:[],referrals:[],emailConfigured:false};
+  let bulkSelectedHeroIds=new Set();
 
   function syncCommunicationMode() {
     const sending = $('#comm-action')?.value === 'send';
@@ -451,6 +454,8 @@
     $('#comm-outcome').value = '';
     $('#comm-recipient-verified').checked = false;
     $('#comm-sharing-necessary').checked = false;
+    if($('#comm-attachment')) $('#comm-attachment').value='';
+    if($('#comm-attachment-state')) $('#comm-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB.';
     $('#comm-error').hidden = true;
     syncCommunicationMode();
   }
@@ -494,10 +499,111 @@
     $('#comm-subject').focus();
   }
 
+  function validateCommunicationAttachment(file){
+    if(!file) return;
+    if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)) throw new Error('Attach a PNG, JPEG, WebP or PDF poster.');
+    if(file.size>10*1024*1024) throw new Error('Poster attachments must be under 10 MB.');
+  }
+
+  async function uploadCommunicationAttachment(file,stateElement){
+    if(!file) return null;
+    validateCommunicationAttachment(file);
+    if(stateElement) stateElement.textContent='Preparing poster upload…';
+    const sign=await api('/api/admin-communication-upload-sign',{method:'POST',body:{file_name:file.name,file_size:file.size,mime_type:file.type}});
+    if(stateElement) stateElement.textContent='Uploading poster…';
+    const form=new FormData();
+    form.append('cacheControl','3600');
+    form.append('',file,file.name || 'poster');
+    const response=await fetch(sign.signedUrl,{method:'PUT',headers:{'x-upsert':'false'},body:form});
+    if(!response.ok){
+      const detail=await response.text().catch(()=> '');
+      let readable=detail;
+      try{const parsed=JSON.parse(detail);readable=parsed.message||parsed.error||detail;}catch{}
+      throw new Error(`Poster upload failed (${response.status}). ${readable || 'Please try again.'}`);
+    }
+    if(stateElement) stateElement.textContent=`Attached: ${file.name}`;
+    return {attachment_path:sign.path,attachment_name:file.name,attachment_mime_type:file.type,attachment_size:file.size};
+  }
+
+  function communicationPurpose(){return $('#bulk-purpose')?.value || 'updates';}
+  function consentKeyForPurpose(purpose){return ({updates:'consent_updates',events:'consent_events',recognition:'consent_recognition'})[purpose] || '';}
+  function validFamilyEmail(value){return /^\S+@\S+\.\S+$/.test(String(value||'').trim());}
+  function heroDisplayName(hero){return hero.preferred_name || hero.child_name || 'Child';}
+
+  function heroEligibility(hero,purpose=communicationPurpose()){
+    if(hero.status==='archived') return {eligible:false,reason:'Archived'};
+    if(!validFamilyEmail(hero.primary_contact_email)) return {eligible:false,reason:'No family email'};
+    const key=consentKeyForPurpose(purpose);
+    if(key && !hero[key]) return {eligible:false,reason:'No consent for this purpose'};
+    return {eligible:true,reason:purpose==='service'?'Service contact':'Eligible'};
+  }
+
+  function purposeHelpText(purpose){
+    return ({
+      updates:'Only families who consented to Project Golden Child updates can be selected.',
+      events:'Only families who consented to event invitations can be selected. Use this for event posters.',
+      recognition:'Only families with Harper’s Heroes recognition consent can be selected.',
+      service:'For necessary administrative or family-support contact only. Do not use this option to bypass marketing/event consent.'
+    })[purpose] || '';
+  }
+
+  function selectedBulkHeroes(){
+    return communicationsCache.heroes.filter(hero=>bulkSelectedHeroIds.has(hero.id) && heroEligibility(hero).eligible);
+  }
+
+  function renderBulkRecipients({clearInvalid=false}={}){
+    const picker=$('#bulk-recipient-picker'); if(!picker)return;
+    const purpose=communicationPurpose();
+    $('#bulk-purpose-help').textContent=purposeHelpText(purpose);
+    $('#bulk-service-check-wrap').hidden=purpose!=='service';
+    if(purpose!=='service') $('#bulk-service-confirmed').checked=false;
+
+    const search=String($('#bulk-recipient-search')?.value||'').trim().toLowerCase();
+    const heroes=communicationsCache.heroes.filter(h=>h.status!=='archived');
+    if(clearInvalid){
+      for(const id of [...bulkSelectedHeroIds]){
+        const hero=communicationsCache.heroes.find(h=>h.id===id);
+        if(!hero || !heroEligibility(hero,purpose).eligible) bulkSelectedHeroIds.delete(id);
+      }
+    }
+
+    const visible=heroes.filter(hero=>{
+      if(!search) return true;
+      return `${heroDisplayName(hero)} ${hero.primary_contact_name||''} ${hero.primary_contact_email||''}`.toLowerCase().includes(search);
+    });
+
+    picker.innerHTML=visible.length ? visible.map(hero=>{
+      const eligibility=heroEligibility(hero,purpose);
+      const checked=bulkSelectedHeroIds.has(hero.id) && eligibility.eligible;
+      return `<label class="recipient-row ${eligibility.eligible?'':'ineligible'}">
+        <input type="checkbox" data-bulk-hero="${hero.id}" ${checked?'checked':''} ${eligibility.eligible?'':'disabled'}/>
+        <span class="recipient-main"><strong>${esc(heroDisplayName(hero))}</strong><span>${esc(hero.primary_contact_name || 'Family contact')} · ${esc(hero.primary_contact_email || 'No email')}</span></span>
+        <span class="recipient-consent ${eligibility.eligible?'':'warning'}">${esc(eligibility.reason)}</span>
+      </label>`;
+    }).join('') : '<div class="loading-card">No children match this search.</div>';
+
+    $$('[data-bulk-hero]').forEach(box=>box.addEventListener('change',()=>{
+      if(box.checked) bulkSelectedHeroIds.add(box.dataset.bulkHero); else bulkSelectedHeroIds.delete(box.dataset.bulkHero);
+      updateBulkRecipientSummary();
+    }));
+    updateBulkRecipientSummary();
+  }
+
+  function updateBulkRecipientSummary(){
+    const selected=selectedBulkHeroes();
+    const uniqueEmails=new Set(selected.map(h=>String(h.primary_contact_email||'').trim().toLowerCase()));
+    const eligible=communicationsCache.heroes.filter(h=>h.status!=='archived' && heroEligibility(h).eligible);
+    $('#bulk-recipient-summary').textContent=`${selected.length} child${selected.length===1?'':'ren'} selected · ${uniqueEmails.size} family email${uniqueEmails.size===1?'':'s'} · ${eligible.length} eligible for this purpose.`;
+  }
+
   $('#comm-action')?.addEventListener('change',syncCommunicationMode);
   $('#comm-link')?.addEventListener('change',event => prefillCommunication(event.target.value));
   $('#new-communication')?.addEventListener('click',clearCommunicationForm);
   $('#clear-communication')?.addEventListener('click',clearCommunicationForm);
+  $('#comm-attachment')?.addEventListener('change',event=>{
+    const file=event.target.files?.[0];
+    try{validateCommunicationAttachment(file);$('#comm-attachment-state').textContent=file?`Ready to attach: ${file.name}`:'PNG, JPEG, WebP or PDF, up to 10 MB.';}catch(err){event.target.value='';$('#comm-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB.';alert(err.message);}
+  });
 
   $('#communication-editor')?.addEventListener('submit',async event => {
     event.preventDefault();
@@ -522,37 +628,67 @@
       recipient_verified:$('#comm-recipient-verified').checked,
       sharing_necessary:$('#comm-sharing-necessary').checked
     };
+    const button=$('#comm-submit'); const previous=button.textContent;
     try {
+      button.disabled=true;
+      if(sending){
+        const file=$('#comm-attachment').files?.[0] || null;
+        Object.assign(body,await uploadCommunicationAttachment(file,$('#comm-attachment-state')) || {});
+        button.textContent='Sending…';
+      }
       await api('/api/admin-communications',{method:'POST',body});
       clearCommunicationForm();
       await loadCommunications();
       loadSummary();
     } catch(err) {
       showMessage($('#comm-error'),err.message);
-    }
+    } finally {button.disabled=false;button.textContent=previous;syncCommunicationMode();}
+  });
+
+  $('#bulk-purpose')?.addEventListener('change',()=>{bulkSelectedHeroIds.clear();renderBulkRecipients({clearInvalid:true});});
+  $('#bulk-recipient-search')?.addEventListener('input',()=>renderBulkRecipients());
+  $('#bulk-select-all')?.addEventListener('click',()=>{
+    for(const hero of communicationsCache.heroes) if(heroEligibility(hero).eligible) bulkSelectedHeroIds.add(hero.id);
+    renderBulkRecipients();
+  });
+  $('#bulk-clear-all')?.addEventListener('click',()=>{bulkSelectedHeroIds.clear();renderBulkRecipients();});
+  $('#bulk-attachment')?.addEventListener('change',event=>{
+    const file=event.target.files?.[0];
+    try{validateCommunicationAttachment(file);$('#bulk-attachment-state').textContent=file?`Ready to attach: ${file.name}`:'PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';}catch(err){event.target.value='';$('#bulk-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';alert(err.message);}
   });
 
   $('#bulk-communication-form')?.addEventListener('submit',async event => {
     event.preventDefault();
     $('#bulk-error').hidden = true;
+    const selected=selectedBulkHeroes();
+    if(!selected.length) return showMessage($('#bulk-error'),'Select at least one eligible child before sending.');
     const button = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
     const previous = button?.textContent;
-    if(button){button.disabled=true;button.textContent='Sending…';}
+    if(button){button.disabled=true;button.textContent='Preparing…';}
     try {
+      const file=$('#bulk-attachment').files?.[0] || null;
+      const attachment=await uploadCommunicationAttachment(file,$('#bulk-attachment-state')) || {};
+      if(button) button.textContent='Sending…';
       const result = await api('/api/admin-communications',{
         method:'POST',
         body:{
           action:'send-bulk',
-          audience:$('#bulk-audience').value,
+          purpose:communicationPurpose(),
+          hero_ids:selected.map(h=>h.id),
           subject:$('#bulk-subject').value,
           notes:$('#bulk-message').value,
           recipient_verified:$('#bulk-recipient-verified').checked,
-          sharing_necessary:$('#bulk-sharing-necessary').checked
+          sharing_necessary:$('#bulk-sharing-necessary').checked,
+          service_message_confirmed:$('#bulk-service-confirmed').checked,
+          ...attachment
         }
       });
-      $('#bulk-state').textContent = `${result.count} individual email${result.count===1?'':'s'} sent and logged.`;
-      $('#bulk-subject').value=''; $('#bulk-message').value='';
-      $('#bulk-recipient-verified').checked=false; $('#bulk-sharing-necessary').checked=false;
+      const skipped=result.skipped?.length ? ` ${result.skipped.length} selected record${result.skipped.length===1?' was':'s were'} skipped because it was no longer eligible.` : '';
+      $('#bulk-state').textContent = `Sent ${result.count} private family email${result.count===1?'':'s'} and logged the communication against ${result.childCount} child record${result.childCount===1?'':'s'}.${skipped}`;
+      $('#bulk-subject').value=''; $('#bulk-message').value=''; $('#bulk-attachment').value='';
+      $('#bulk-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';
+      $('#bulk-recipient-verified').checked=false; $('#bulk-sharing-necessary').checked=false; $('#bulk-service-confirmed').checked=false;
+      bulkSelectedHeroIds.clear(); renderBulkRecipients();
       await loadCommunications(); loadSummary();
     } catch(err) { showMessage($('#bulk-error'),err.message); }
     finally { if(button){button.disabled=false;button.textContent=previous;} }
@@ -569,11 +705,12 @@
     list.innerHTML = '<div class="loading-card">Loading…</div>';
     try {
       communicationsCache = await api('/api/admin-communications');
-      populateCommunicationLinks(); syncCommunicationMode();
+      populateCommunicationLinks(); syncCommunicationMode(); renderBulkRecipients({clearInvalid:true});
       if($('#bulk-state') && !communicationsCache.emailConfigured) $('#bulk-state').textContent='Email delivery is not configured yet.';
       const today = new Date(); today.setHours(23,59,59,999);
       list.innerHTML = communicationsCache.items.length ? communicationsCache.items.map(item => {
         const followUpDue = item.follow_up_date && !item.follow_up_completed_at && new Date(`${item.follow_up_date}T23:59:59`) <= today;
+        const attachment=item.attachment_path ? `<p><b>Attachment:</b> ${esc(item.attachment_name || 'Poster')} ${item.attachment_size?`· ${Math.max(1,Math.round(Number(item.attachment_size)/1024))} KB`:''}</p>` : '';
         return `
         <article class="admin-item communication-item">
           <div class="admin-item-head">
@@ -582,9 +719,11 @@
           </div>
           ${item.linked_name ? `<p><b>${esc(item.linked_type)}:</b> ${esc(item.linked_name)}</p>` : ''}
           <p><b>Contact:</b> ${esc(item.contact_name || '—')} ${item.contact_email ? `· ${esc(item.contact_email)}` : ''} ${item.contact_phone ? `· ${esc(item.contact_phone)}` : ''}</p>
+          ${attachment}
           <details><summary>View communication notes</summary><p><b>Notes:</b> ${esc(item.notes || '—')}</p><p><b>Outcome / next step:</b> ${esc(item.outcome || '—')}</p>${item.error_text?`<p class="error-copy"><b>Delivery error:</b> ${esc(item.error_text)}</p>`:''}<p><b>Logged by:</b> ${esc(item.created_by || '—')}</p></details>
           <div class="admin-item-actions">
             ${item.contact_email ? `<button class="btn btn-outline" data-reply-comm="${item.id}">Email again</button>` : ''}
+            ${item.attachment_path ? `<button class="btn btn-outline" data-open-comm-attachment="${item.id}">View attachment</button>` : ''}
             ${item.follow_up_date && !item.follow_up_completed_at ? `<button class="btn btn-outline" data-complete-followup="${item.id}">Complete follow-up</button>` : ''}
             <button class="btn btn-danger" data-delete-comm="${item.id}">Delete</button>
           </div>
@@ -599,6 +738,13 @@
         else { $('#comm-action').value='send'; $('#comm-contact-name').value=item.contact_name||''; $('#comm-contact-email').value=item.contact_email||''; syncCommunicationMode(); }
         $('#comm-subject').value = /^Re:/i.test(item.subject||'') ? item.subject : `Re: ${item.subject||''}`;
         $('#communication-editor').scrollIntoView({behavior:'smooth',block:'start'});
+      }));
+      $$('[data-open-comm-attachment]').forEach(button=>button.addEventListener('click',async()=>{
+        const tab=window.open('about:blank','_blank');
+        try{
+          const result=await api('/api/admin-communications',{method:'POST',body:{action:'attachment-url',id:button.dataset.openCommAttachment}});
+          if(tab){tab.opener=null;tab.location=result.url;}else{window.location.assign(result.url);}
+        }catch(err){if(tab)tab.close();alert(err.message);}
       }));
       $$('[data-complete-followup]').forEach(button => button.addEventListener('click',async() => {
         await api('/api/admin-communications',{method:'POST',body:{action:'complete-follow-up',id:button.dataset.completeFollowup}});

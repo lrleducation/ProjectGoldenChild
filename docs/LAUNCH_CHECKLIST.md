@@ -14,7 +14,7 @@
 - [ ] Email notifications contain references only and no diagnosis/medical detail.
 - [ ] Mobile navigation and accessibility checked.
 - [ ] Domain, HTTPS and sender email verified.
-- [ ] Supabase System Health reports schema `2.5.0` with all checks passing.
+- [ ] Supabase System Health reports schema `2.6.0` with all checks passing.
 - [ ] Resend sender domain/from address verified and a test direct email delivered correctly.
 - [ ] Bulk communications tested with fictional consented records; opt-out/preference changes immediately alter the audience.
 - [ ] `CRON_SECRET` configured and the appointment reminder endpoint returns 200 only with the Vercel cron authorisation header.

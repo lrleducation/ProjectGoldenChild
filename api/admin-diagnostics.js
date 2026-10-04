@@ -47,7 +47,7 @@ const REQUIRED_COLUMNS = {
   audit_log: ['id','actor_email','action','entity_type','entity_id','detail','created_at','updated_at'],
   communications: [
     'id','hero_id','referral_id','direction','method','contact_name','contact_email','contact_phone',
-    'subject','notes','outcome','occurred_at','follow_up_date','created_by','send_status','provider_message_id','error_text','sent_at','send_batch_id','follow_up_completed_at','created_at','updated_at'
+    'subject','notes','outcome','occurred_at','follow_up_date','created_by','send_status','provider_message_id','error_text','sent_at','send_batch_id','follow_up_completed_at','attachment_name','attachment_path','attachment_mime_type','attachment_size','created_at','updated_at'
   ],
   appointments: [
     'id','hero_id','referral_id','appointment_type','title','meeting_with','contact_email','location','start_at','end_at','notes','status',
@@ -117,7 +117,29 @@ module.exports = async function(req,res){
     };
   }
 
-  const ok = tableReadOk && write.ok && storage.ok && version === '2.5.0';
+  let communicationStorage={ok:false,bucketOk:false,signingOk:false,detail:'',status:0,authMode:''};
+  try{
+    const bucketResult=await getBucket('communication-attachments');
+    const bucket=bucketResult.bucket || {};
+    const bucketOk=Boolean(bucket?.id === 'communication-attachments' && bucket?.public === false);
+    const signed=await createSignedUploadUrl('communication-attachments',`health/${Date.now()}-communication-upload-check.png`);
+    communicationStorage={
+      ok:bucketOk && Boolean(signed?.signedUrl),
+      bucketOk,
+      signingOk:Boolean(signed?.signedUrl),
+      public:Boolean(bucket?.public),
+      fileSizeLimit:Number(bucket?.file_size_limit || 0),
+      allowedMimeTypes:bucket?.allowed_mime_types || [],
+      detail:'',
+      status:200,
+      authMode:signed?.keyType || bucketResult?.keyType || ''
+    };
+  }catch(err){
+    const diagnostic=safeDiagnostic(err);
+    communicationStorage={ok:false,bucketOk:false,signingOk:false,detail:diagnostic.detail,status:diagnostic.status,authMode:diagnostic.keyType};
+  }
+
+  const ok = tableReadOk && write.ok && storage.ok && communicationStorage.ok && version === '2.6.0';
 
   return json(res,200,{
     ok,
@@ -125,6 +147,7 @@ module.exports = async function(req,res){
     checks,
     write,
     storage,
+    communicationStorage,
     physicalTables:store.TABLE_MAP,
     configuration:{
       databaseConfigured:store.configured(),

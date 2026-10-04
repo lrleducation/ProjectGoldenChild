@@ -3,7 +3,12 @@ const { json, readBody, cleanText, isEmail, bool } = require('../lib/http');
 const { requireAdmin } = require('../lib/security');
 const store = require('../lib/store');
 const { sendEmail, sendBatchEmails, configured:emailConfigured, normaliseRecipients } = require('../lib/email');
+const { createSignedDownloadUrl } = require('../lib/supabase-storage');
 const { audit } = require('../lib/audit');
+
+const ATTACHMENT_BUCKET='communication-attachments';
+const MAX_ATTACHMENT_BYTES=10*1024*1024;
+const ALLOWED_ATTACHMENT_TYPES=new Set(['image/jpeg','image/png','image/webp','application/pdf']);
 
 function validDirection(value) {
   return ['inbound','outbound'].includes(value) ? value : 'outbound';
@@ -23,7 +28,31 @@ function decorate(items,heroes,referrals){
   });
 }
 
-async function createLog(user,b,{sendStatus='logged',providerMessageId=null,errorText=null,sentAt=null,batchId=null}={}){
+function attachmentMeta(body={}){
+  const path=cleanText(body.attachment_path,500);
+  if(!path) return null;
+  if(!/^communications\/[a-zA-Z0-9._\/-]+$/.test(path)) throw new Error('INVALID_ATTACHMENT_PATH');
+  const name=cleanText(body.attachment_name,180) || 'Project-Golden-Child-poster';
+  const mime=cleanText(body.attachment_mime_type,120).toLowerCase();
+  const size=Number(body.attachment_size || 0);
+  if(!ALLOWED_ATTACHMENT_TYPES.has(mime)) throw new Error('INVALID_ATTACHMENT_TYPE');
+  if(!Number.isFinite(size) || size<=0 || size>MAX_ATTACHMENT_BYTES) throw new Error('INVALID_ATTACHMENT_SIZE');
+  return {path,name,mime,size};
+}
+
+async function resendAttachment(meta){
+  if(!meta) return [];
+  const signed=await createSignedDownloadUrl(ATTACHMENT_BUCKET,meta.path,{expiresIn:3600});
+  return [{filename:meta.name,path:signed.signedUrl,contentType:meta.mime}];
+}
+
+function communicationHtml(notes,footer=''){
+  const escape=value=>String(value||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const paragraphs=String(notes||'').split(/\n{2,}/).map(p=>`<p>${escape(p).replace(/\n/g,'<br>')}</p>`).join('');
+  return `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#30261d;line-height:1.6"><div style="max-width:680px;margin:0 auto;padding:24px"><div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a06a08;margin-bottom:14px">Project Golden Child</div>${paragraphs}${footer?`<p style="margin-top:28px;color:#776b61;font-size:12px">${escape(footer)}</p>`:''}<p style="${footer?'':'margin-top:28px;'}color:#776b61;font-size:12px">Project Golden Child · Awareness · Recognition · Community</p></div></body></html>`;
+}
+
+async function createLog(user,b,{sendStatus='logged',providerMessageId=null,errorText=null,sentAt=null,batchId=null,attachment=null}={}){
   return store.insert('communications',{
     hero_id:cleanText(b.hero_id,80) || null,
     referral_id:cleanText(b.referral_id,80) || null,
@@ -43,8 +72,27 @@ async function createLog(user,b,{sendStatus='logged',providerMessageId=null,erro
     error_text:errorText,
     sent_at:sentAt,
     send_batch_id:batchId,
-    follow_up_completed_at:null
+    follow_up_completed_at:null,
+    attachment_name:attachment?.name || null,
+    attachment_path:attachment?.path || null,
+    attachment_mime_type:attachment?.mime || null,
+    attachment_size:attachment?.size || null
   });
+}
+
+function purposeConfig(value){
+  const purpose=cleanText(value,40);
+  const configs={
+    updates:{consent:'consent_updates',label:'Project Golden Child updates',footer:'You are receiving this because your family chose to receive Project Golden Child updates.'},
+    events:{consent:'consent_events',label:'event invitations',footer:'You are receiving this because your family chose to receive Project Golden Child event invitations.'},
+    recognition:{consent:'consent_recognition',label:'Harper’s Heroes recognition',footer:'You are receiving this as part of Harper’s Heroes recognition and support.'},
+    service:{consent:null,label:'essential family/service communication',footer:'This is an administrative or family-support communication from Project Golden Child.'}
+  };
+  return configs[purpose] ? {key:purpose,...configs[purpose]} : null;
+}
+
+function heroName(hero){
+  return hero.preferred_name || hero.child_name || 'Child';
 }
 
 module.exports = async function(req,res){
@@ -75,6 +123,16 @@ module.exports = async function(req,res){
         return json(res,200,{item});
       }
 
+      if(b.action === 'attachment-url') {
+        const id=cleanText(b.id,80);
+        if(!id) return json(res,400,{message:'Missing communication id.'});
+        const existing=await store.get('communications',id);
+        if(!existing || !existing.attachment_path) return json(res,404,{message:'Attachment not found.'});
+        const signed=await createSignedDownloadUrl(ATTACHMENT_BUCKET,existing.attachment_path,{expiresIn:600});
+        await audit(user,'view_attachment','communication',id,{attachment_name:existing.attachment_name});
+        return json(res,200,{url:signed.signedUrl,name:existing.attachment_name || 'attachment'});
+      }
+
       if(b.action === 'update') {
         const id = cleanText(b.id,80);
         if(!id) return json(res,400,{message:'Missing communication id.'});
@@ -97,18 +155,23 @@ module.exports = async function(req,res){
         if(!bool(b.recipient_verified) || !bool(b.sharing_necessary)) return json(res,400,{message:'Confirm the recipient and information-sharing checks before sending.'});
         if(!emailConfigured()) return json(res,503,{message:'Email sending is not configured. Add RESEND_API_KEY and FROM_EMAIL in Vercel.'});
 
-        const draft=await createLog(user,{...b,direction:'outbound',method:'Email',contact_email:email},{sendStatus:'sending'});
+        let attachment;
+        try{ attachment=attachmentMeta(b); }
+        catch{ return json(res,400,{message:'The selected poster attachment is invalid. Remove it and upload it again.'}); }
+        const attachments=await resendAttachment(attachment);
+        const draft=await createLog(user,{...b,direction:'outbound',method:'Email',contact_email:email},{sendStatus:'sending',attachment});
         try{
           const sent=await sendEmail({
             to:email,
             subject,
             text:notes,
-            html:`<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#30261d;line-height:1.6"><div style="max-width:680px;margin:0 auto;padding:24px"><div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a06a08;margin-bottom:14px">Project Golden Child</div>${notes.split(/\n{2,}/).map(p=>`<p>${p.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g,'<br>')}</p>`).join('')}<p style="margin-top:28px;color:#776b61;font-size:12px">Project Golden Child · Awareness · Recognition · Community</p></div></body></html>`,
+            html:communicationHtml(notes),
             replyTo:process.env.REPLY_TO_EMAIL || process.env.NOTIFICATION_EMAIL,
-            tags:[{name:'category',value:'pgc_communication'}]
+            tags:[{name:'category',value:'pgc_communication'}],
+            attachments
           });
           const item=await store.update('communications',draft.id,{send_status:'sent',provider_message_id:sent.id||null,sent_at:new Date().toISOString(),error_text:null,occurred_at:new Date().toISOString()});
-          await audit(user,'send','communication',draft.id,{to:email,hero_id:draft.hero_id,referral_id:draft.referral_id});
+          await audit(user,'send','communication',draft.id,{to:email,hero_id:draft.hero_id,referral_id:draft.referral_id,attachment:Boolean(attachment)});
           return json(res,200,{item});
         }catch(err){
           const item=await store.update('communications',draft.id,{send_status:'failed',error_text:String(err.message||err).slice(0,1000)});
@@ -118,39 +181,78 @@ module.exports = async function(req,res){
       }
 
       if(b.action === 'send-bulk') {
-        if(!bool(b.recipient_verified) || !bool(b.sharing_necessary)) return json(res,400,{message:'Confirm the recipient and information-sharing checks before sending.'});
+        if(!bool(b.recipient_verified) || !bool(b.sharing_necessary)) return json(res,400,{message:'Confirm the audience and information-sharing checks before sending.'});
         if(!emailConfigured()) return json(res,503,{message:'Email sending is not configured. Add RESEND_API_KEY and FROM_EMAIL in Vercel.'});
-        const audience=cleanText(b.audience,30);
-        if(!['updates','events'].includes(audience)) return json(res,400,{message:'Choose a valid consented audience.'});
+        const purpose=purposeConfig(b.purpose || b.audience);
+        if(!purpose) return json(res,400,{message:'Choose a valid communication purpose.'});
+        if(purpose.key==='service' && !bool(b.service_message_confirmed)) return json(res,400,{message:'Confirm that an essential/service communication is not being used for promotional or event marketing.'});
+
         const subject=cleanText(b.subject,300),notes=cleanText(b.notes,20000);
         if(!subject || !notes) return json(res,400,{message:'Subject and message are required.'});
 
+        let attachment;
+        try{ attachment=attachmentMeta(b); }
+        catch{ return json(res,400,{message:'The selected poster attachment is invalid. Remove it and upload it again.'}); }
+        const attachments=await resendAttachment(attachment);
+
+        const rawIds=Array.isArray(b.hero_ids)?b.hero_ids:[];
+        const selectedIds=new Set(rawIds.map(id=>cleanText(id,80)).filter(Boolean));
+        if(!selectedIds.size) return json(res,400,{message:'Select at least one child before sending.'});
+
         const heroes=await store.list('heroes',{order:'created_at.asc'});
-        const consentKey=audience==='events'?'consent_events':'consent_updates';
-        const selected=heroes.filter(h=>h.status!=='archived' && h[consentKey] && normaliseRecipients(h.primary_contact_email).length);
-        const unique=[]; const seen=new Set();
-        for(const hero of selected){
+        const selected=[];
+        const skipped=[];
+        for(const hero of heroes){
+          if(!selectedIds.has(hero.id)) continue;
+          if(hero.status==='archived') { skipped.push({id:hero.id,name:heroName(hero),reason:'archived'}); continue; }
+          if(purpose.consent && !hero[purpose.consent]) { skipped.push({id:hero.id,name:heroName(hero),reason:'consent'}); continue; }
           const email=normaliseRecipients(hero.primary_contact_email)[0];
-          const key=`${hero.id}:${email}`;
-          if(seen.has(key)) continue; seen.add(key); unique.push({hero,email});
+          if(!email) { skipped.push({id:hero.id,name:heroName(hero),reason:'email'}); continue; }
+          selected.push({hero,email});
         }
-        if(!unique.length) return json(res,400,{message:'No active Harper’s Heroes records have both this consent and a valid email address.'});
-        if(unique.length>100) return json(res,400,{message:'This audience is larger than 100 recipients. Split the send into smaller groups before continuing.'});
+        if(!selected.length) return json(res,400,{message:'None of the selected children currently have an eligible family email for this communication purpose.'});
+
+        const byEmail=new Map();
+        for(const row of selected){
+          if(!byEmail.has(row.email)) byEmail.set(row.email,[]);
+          byEmail.get(row.email).push(row.hero);
+        }
+        if(byEmail.size>100) return json(res,400,{message:'This selection contains more than 100 family email addresses. Split the send into smaller groups before continuing.'});
 
         const batchId=crypto.randomUUID();
-        const preferenceText=audience==='events'?'event invitations':'Project Golden Child updates';
-        const footer=`You are receiving this because your family chose to receive ${preferenceText}. If you would like us to change this preference, reply to this email or contact Project Golden Child.`;
-        const messages=unique.map(({email})=>({to:email,subject,text:`${notes}\n\n${footer}`,html:`<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#30261d;line-height:1.6"><div style="max-width:680px;margin:0 auto;padding:24px"><div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a06a08;margin-bottom:14px">Project Golden Child</div>${notes.split(/\n{2,}/).map(p=>`<p>${p.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g,'<br>')}</p>`).join('')}<p style="margin-top:28px;color:#776b61;font-size:12px">${footer}</p><p style="color:#776b61;font-size:12px">Project Golden Child · Awareness · Recognition · Community</p></div></body></html>`,replyTo:process.env.REPLY_TO_EMAIL || process.env.NOTIFICATION_EMAIL,tags:[{name:'category',value:'pgc_bulk'}]}));
-        const result=await sendBatchEmails(messages);
-        const providerRows=Array.isArray(result.data)?result.data:[];
+        const preferenceFooter=purpose.footer + ' If you would like us to change your communication preferences, reply to this email or contact Project Golden Child.';
+        const deliveries=[...byEmail.entries()].map(([email])=>({
+          to:email,
+          subject,
+          text:`${notes}\n\n${preferenceFooter}`,
+          html:communicationHtml(notes,preferenceFooter),
+          replyTo:process.env.REPLY_TO_EMAIL || process.env.NOTIFICATION_EMAIL,
+          tags:[{name:'category',value:'pgc_group'}],
+          attachments
+        }));
+
         const now=new Date().toISOString();
-        const logs=[];
-        for(let i=0;i<unique.length;i++){
-          const {hero,email}=unique[i];
-          logs.push(await createLog(user,{hero_id:hero.id,direction:'outbound',method:'Email',contact_name:hero.primary_contact_name,contact_email:email,subject,notes,outcome:`Bulk ${audience} communication`,occurred_at:now},{sendStatus:'sent',providerMessageId:providerRows[i]?.id||null,sentAt:now,batchId}));
+        let result;
+        try{
+          result=await sendBatchEmails(deliveries);
+        }catch(err){
+          const errorText=String(err.message||err).slice(0,1000);
+          for(const {hero,email} of selected){
+            await createLog(user,{hero_id:hero.id,direction:'outbound',method:'Email',contact_name:hero.primary_contact_name,contact_email:email,subject,notes,outcome:`Group ${purpose.label} communication`,occurred_at:now},{sendStatus:'failed',errorText,batchId,attachment});
+          }
+          await audit(user,'send_bulk_failed','communication_batch',batchId,{purpose:purpose.key,children:selected.length,recipients:byEmail.size,error:errorText.slice(0,500)});
+          return json(res,502,{message:'The group email could not be sent. Failed attempts have been retained in the communication history.'});
         }
-        await audit(user,'send_bulk','communication_batch',batchId,{audience,count:logs.length});
-        return json(res,200,{ok:true,count:logs.length,batchId});
+
+        const providerRows=Array.isArray(result.data)?result.data:[];
+        const providerByEmail=new Map();
+        [...byEmail.keys()].forEach((email,index)=>providerByEmail.set(email,providerRows[index]?.id||null));
+        const logs=[];
+        for(const {hero,email} of selected){
+          logs.push(await createLog(user,{hero_id:hero.id,direction:'outbound',method:'Email',contact_name:hero.primary_contact_name,contact_email:email,subject,notes,outcome:`Group ${purpose.label} communication`,occurred_at:now},{sendStatus:'sent',providerMessageId:providerByEmail.get(email),sentAt:now,batchId,attachment}));
+        }
+        await audit(user,'send_bulk','communication_batch',batchId,{purpose:purpose.key,children:logs.length,recipients:byEmail.size,skipped:skipped.length,attachment:Boolean(attachment)});
+        return json(res,200,{ok:true,count:byEmail.size,childCount:logs.length,skipped,batchId});
       }
 
       const method = cleanText(b.method,60);

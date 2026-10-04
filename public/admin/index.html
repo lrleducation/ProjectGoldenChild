@@ -84,6 +84,11 @@
         </div>
       </div>
       <div class="send-checks" id="comm-send-checks" hidden>
+        <div class="communication-attachment-box">
+          <strong>Poster attachment, optional</strong>
+          <label class="file-choice" for="comm-attachment"><span>Choose poster</span><input accept="image/jpeg,image/png,image/webp,application/pdf" id="comm-attachment" type="file"/></label>
+          <span class="small" id="comm-attachment-state">PNG, JPEG, WebP or PDF, up to 10 MB.</span>
+        </div>
         <label><input id="comm-recipient-verified" type="checkbox"/> I have checked that the recipient email address is correct.</label>
         <label><input id="comm-sharing-necessary" type="checkbox"/> I have checked that the information in this email is necessary and appropriate to share with this recipient.</label>
       </div>
@@ -99,19 +104,31 @@
     </div>
   </div>
   <section class="panel bulk-communications-panel">
-    <div class="admin-top compact-top"><div><span class="eyebrow">Consented audience</span><h3>Email a group safely</h3><p class="small">Each family receives a separate email. Addresses are never exposed to other families.</p></div></div>
+    <div class="admin-top compact-top"><div><span class="eyebrow">Selected families</span><h3>Email multiple children safely</h3><p class="small">Choose individual children, several children or every eligible child. Each family receives a private email and no recipient can see another family's address.</p></div></div>
     <form id="bulk-communication-form">
       <div class="field-grid">
-        <div class="field"><label for="bulk-audience">Audience</label><select id="bulk-audience"><option value="updates">Families who consented to project updates</option><option value="events">Families who consented to event invitations</option></select></div>
+        <div class="field"><label for="bulk-purpose">Communication purpose</label><select id="bulk-purpose"><option value="updates">Project updates</option><option value="events">Event invitation / poster</option><option value="recognition">Harper's Heroes recognition</option><option value="service">Essential family / service communication</option></select><span class="help" id="bulk-purpose-help"></span></div>
         <div class="field"><label for="bulk-subject">Subject</label><input id="bulk-subject" required/></div>
+        <div class="field full">
+          <label>Children / families</label>
+          <div class="recipient-picker-tools"><input id="bulk-recipient-search" type="search" placeholder="Search child or family email"/><button class="btn btn-outline" id="bulk-select-all" type="button">Select all eligible</button><button class="btn btn-outline" id="bulk-clear-all" type="button">Clear all</button></div>
+          <div class="recipient-picker-summary" id="bulk-recipient-summary">Choose a communication purpose to see eligible children.</div>
+          <div class="recipient-picker" id="bulk-recipient-picker"></div>
+        </div>
         <div class="field full"><label for="bulk-message">Message</label><textarea id="bulk-message" class="large-textarea" required></textarea></div>
+        <div class="field full communication-attachment-box">
+          <strong>Poster attachment, optional</strong>
+          <label class="file-choice" for="bulk-attachment"><span>Choose poster</span><input accept="image/jpeg,image/png,image/webp,application/pdf" id="bulk-attachment" type="file"/></label>
+          <span class="small" id="bulk-attachment-state">PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.</span>
+        </div>
       </div>
       <div class="send-checks">
-        <label><input id="bulk-recipient-verified" type="checkbox"/> I am using the selected consent category for the purpose described in this message.</label>
-        <label><input id="bulk-sharing-necessary" type="checkbox"/> I have checked that the information is necessary and appropriate for this audience.</label>
+        <label><input id="bulk-recipient-verified" type="checkbox"/> I have checked that the selected children and communication purpose are correct.</label>
+        <label><input id="bulk-sharing-necessary" type="checkbox"/> I have checked that the information is necessary and appropriate for these families.</label>
+        <label id="bulk-service-check-wrap" hidden><input id="bulk-service-confirmed" type="checkbox"/> This is an essential administrative or family-support message, not promotional or event marketing.</label>
       </div>
       <div class="error-box" id="bulk-error" hidden></div>
-      <div class="form-actions"><span class="small" id="bulk-state">Maximum 100 recipients in one send.</span><button class="btn btn-primary" type="submit">Send individual emails</button></div>
+      <div class="form-actions"><span class="small" id="bulk-state">Maximum 100 family email addresses in one send.</span><button class="btn btn-primary" type="submit">Send private emails</button></div>
     </form>
   </section>
 </section>
@@ -474,4 +491,4 @@ Do not invent dates, prices, contact details or promises that I have not given y
 
 <section class="admin-section" data-section="go-gold"><div class="admin-top"><div><span class="eyebrow">September 2027</span><h2>Go Gold registrations</h2></div><button class="btn btn-outline" data-refresh="go-gold">Refresh</button></div><div class="admin-list" id="go-gold-list"></div></section>
 <section class="admin-section" data-section="contacts"><div class="admin-top"><div><span class="eyebrow">Website</span><h2>Messages</h2></div><button class="btn btn-outline" data-refresh="contacts">Refresh</button></div><div class="admin-list" id="contacts-list"></div></section>
-</main></div></div><script src="/admin/admin.js?v=2.5.1"></script></body></html>
+</main></div></div><script src="/admin/admin.js?v=2.6.0"></script></body></html>

@@ -1,3 +1,15 @@
+# v2.6.0 — selected-recipient communications and poster attachments
+
+- Communications can now target individual children, multiple children or all eligible Harper’s Heroes.
+- Recipient selection is consent-aware for project updates, event invitations and recognition communications.
+- Added a safeguarded essential/service communication purpose for necessary non-promotional family contact.
+- Siblings sharing the same family email receive one message while the communication is logged against each selected child.
+- Direct and group emails can include PNG, JPEG, WebP or PDF poster attachments up to 10 MB.
+- Attachments are stored in a private Supabase bucket and delivered through short-lived signed URLs.
+- Communication history now retains attachment metadata and can reopen the sent attachment.
+- System Health now checks the communication attachment bucket/signing path as well as the new database columns.
+- Database schema is now v2.6.0; run `supabase/UPDATE_v2.6.0.sql` before deployment.
+
 # v2.5.1 — dashboard repair and referral confirmation
 
 - Repaired dashboard totals so referrals remain counted after promotion to Harper’s Heroes.

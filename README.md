@@ -1,3 +1,7 @@
+# v2.6.0 selected-recipient communications and poster attachments
+
+For an existing v2.5.x deployment, run `supabase/UPDATE_v2.6.0.sql` against the live Supabase project before deploying. Then follow `UPDATE_STEPS_v2.6.0.txt`. The update adds multi-child/all-child recipient selection, consent-aware group sending, sibling email de-duplication and private poster attachments.
+
 # v2.5.1 dashboard repair and referral confirmation
 
 For an existing v2.5.0 deployment, this is a code-only update. No Supabase migration is required. Deploy the repository and follow `UPDATE_STEPS_v2.5.1.txt`.

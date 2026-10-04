@@ -1,0 +1,25 @@
+PROJECT GOLDEN CHILD v2.6.0
+===========================
+
+COMMUNICATION RECIPIENT SELECTION
+• Select one, several or all eligible Harper's Heroes for a group communication.
+• Search by child name, family contact or email.
+• Select all eligible / clear all controls.
+• Consent-aware selection for updates, events and recognition.
+• Separate safeguarded essential/service communication option.
+• Families always receive private individual emails; addresses are never exposed.
+• Siblings sharing one email receive one message, while the audit trail remains linked to each child.
+
+POSTER ATTACHMENTS
+• Attach PNG, JPEG, WebP or PDF posters up to 10 MB.
+• Works for both direct emails and multi-child communications.
+• Attachments are stored in a private Supabase Storage bucket.
+• Communication history records attachment name/type/size/path.
+• Admin users can reopen a sent attachment using a short-lived signed link.
+
+SYSTEM HEALTH
+• Adds schema checks for attachment metadata.
+• Adds a dedicated communication-attachment storage/signing health check.
+
+DATABASE
+• Requires supabase/UPDATE_v2.6.0.sql before deploying the v2.6.0 code.
