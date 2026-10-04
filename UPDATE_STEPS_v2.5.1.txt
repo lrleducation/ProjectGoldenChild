@@ -1,0 +1,16 @@
+PROJECT GOLDEN CHILD v2.5.1 — UPDATE STEPS
+
+This is a code-only update. No Supabase/database migration is required.
+
+1. Deploy the contents of this v2.5.1 ProjectGoldenChild folder/repository to Vercel.
+2. Keep all existing v2.5.0 environment variables exactly as they are.
+3. After deployment, sign in to /admin and confirm the dashboard shows:
+   - Total referrals: all referral records, including records already promoted to Harper's Heroes.
+   - Harper's Heroes: all non-archived Hero records.
+   - The Referrals navigation badge: only referrals still awaiting review.
+4. Submit a test referral and confirm the success message includes guidance to:
+   - check inbox and junk/spam over the next few days; and
+   - add Project Golden Child to email contacts or the safe-senders list.
+5. Delete the test referral from the admin area when finished.
+
+No SQL file needs to be run for this update.

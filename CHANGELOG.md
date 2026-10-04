@@ -1,3 +1,11 @@
+# v2.5.1 — dashboard repair and referral confirmation
+
+- Repaired dashboard totals so referrals remain counted after promotion to Harper’s Heroes.
+- Added a separate `newReferrals` count for the Referrals navigation badge.
+- Made dashboard core counts resilient if an optional communications or appointments table is temporarily unavailable or has not yet been migrated.
+- Added post-submission guidance asking families/referrers to check junk or spam and add Project Golden Child to their contacts/safe-senders list, particularly because initial communications may contain attachments.
+- No database migration is required for v2.5.1.
+
 # v2.5.0 — CRACLL-derived family communications and appointments
 
 - Upgraded the private Communications area from a contact log into a direct email and delivery-audit workflow.

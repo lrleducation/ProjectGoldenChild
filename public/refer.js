@@ -81,7 +81,13 @@
       sections.forEach(s => s.hidden = true);
       form.querySelector('.form-actions').hidden = true;
       service.hidden = false;
-      service.innerHTML = `<strong>Thank you.</strong><br>Your submission has been received securely. Reference: <strong>${data.reference || ''}</strong>`;
+      service.innerHTML = `
+        <strong>Thank you. Your submission has been received securely.</strong><br>
+        Reference: <strong>${data.reference || ''}</strong>
+        <div class="submission-email-note">
+          <strong>One important thing before you go:</strong><br>
+          Please keep an eye on your inbox and your junk or spam folder over the next few days. We recommend adding <strong>Project Golden Child</strong> to your email contacts or safe-senders list now. Our first email may include welcome information as an attachment, which can sometimes cause it to be filtered into junk.
+        </div>`;
       form.scrollIntoView({behavior:'smooth',block:'start'});
     } catch (err) {
       errors.hidden = false; errors.textContent = err.message || 'We could not save the registration.';

@@ -158,7 +158,7 @@
       $('#sum-comms').textContent = d.communications;
       $('#sum-appointments').textContent = d.appointments ?? 0;
       $('#sum-followups').textContent = d.followups ?? 0;
-      $('#ref-count').textContent = d.referrals ? `(${d.referrals})` : '';
+      $('#ref-count').textContent = d.newReferrals ? `(${d.newReferrals})` : '';
     } catch(err) {
       console.error(err);
     }

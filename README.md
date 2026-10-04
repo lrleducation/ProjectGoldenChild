@@ -1,3 +1,7 @@
+# v2.5.1 dashboard repair and referral confirmation
+
+For an existing v2.5.0 deployment, this is a code-only update. No Supabase migration is required. Deploy the repository and follow `UPDATE_STEPS_v2.5.1.txt`.
+
 # v2.5.0 communications and appointments
 
 This release adapts the strongest operational patterns from the CRACLL app to Project Golden Child without changing PGC into a Next.js application. It adds direct and consent-aware email communication, communication follow-up tracking, a family-linked appointments calendar, automatic email reminders and full delivery addresses for welcome packs/gifts.

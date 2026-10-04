@@ -913,3 +913,14 @@ p{margin:0 0 1rem}
   .event-review-copy{padding:22px}
   .event-review-gallery{grid-template-columns:1fr 1fr}
 }
+
+/* v2.5.1 referral confirmation guidance */
+.submission-email-note {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(174, 131, 26, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 248, 224, 0.72);
+  color: inherit;
+  line-height: 1.55;
+}

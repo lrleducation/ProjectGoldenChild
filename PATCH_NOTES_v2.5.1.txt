@@ -1,0 +1,16 @@
+PROJECT GOLDEN CHILD v2.5.1
+
+REPAIR
+- Dashboard referral count now shows all referral records, including referrals already promoted to Harper's Heroes.
+- The Referrals navigation badge continues to show only new/unreviewed referrals.
+- Harper's Heroes count continues to exclude archived records only.
+- Core dashboard counts no longer fail just because the optional Communications or Appointments module is unavailable.
+
+UPGRADE
+After a successful referral/registration submission, the person now sees:
+
+"One important thing before you go:
+Please keep an eye on your inbox and your junk or spam folder over the next few days. We recommend adding Project Golden Child to your email contacts or safe-senders list now. Our first email may include welcome information as an attachment, which can sometimes cause it to be filtered into junk."
+
+DATABASE
+- No SQL/database change is required.
