@@ -2,8 +2,8 @@
 
 <html lang="en-GB"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="noindex,nofollow" name="robots"/><title>Project Golden Child Admin</title><link href="/styles.css" rel="stylesheet"/><link href="/admin/admin.css" rel="stylesheet"/></head><body class="admin-body">
 <div class="admin-login-wrap" id="admin-login"><div class="admin-login-card"><a class="brand" href="/"><span class="brandmark brandmark-pgc"><img alt="" src="/assets/project-golden-child-mark.png?v=2.1.2"/></span><span class="brand-copy"><strong>Project Golden Child</strong><span>Secure administration</span></span></a><h1>Admin sign in</h1><p>Family records and event administration are restricted. Use your Project Golden Child administrator account.</p><form id="login-form"><div class="field"><label for="admin-email">Email</label><input autocomplete="username" id="admin-email" required="" type="email"/></div><div class="field"><label for="admin-password">Password</label><input autocomplete="current-password" id="admin-password" required="" type="password"/></div><div class="field"><label for="admin-otp">Authenticator code</label><input autocomplete="one-time-code" id="admin-otp" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 digits"/></div><div class="error-box" hidden="" id="login-error"></div><button class="btn btn-primary" type="submit">Sign in</button></form><p class="local-note" hidden="" id="local-login-note">Local development login: admin@local.test / GoldenChildLocal!2026. Authentication code can be left blank locally.</p></div></div>
-<div class="admin-shell" hidden="" id="admin-app"><div class="admin-frame"><aside class="admin-side"><a class="brand" href="/"><span class="brandmark brandmark-pgc"><img alt="" src="/assets/project-golden-child-mark.png?v=2.1.2"/></span><span class="brand-copy"><strong>Project Golden Child</strong><span>Secure administration</span></span></a><nav aria-label="Admin sections" class="admin-menu"><button class="active" data-admin-section="dashboard">Dashboard</button><button data-admin-section="referrals">Referrals <span id="ref-count"></span></button><button data-admin-section="heroes">Harper's Heroes</button><button data-admin-section="communications">Communications</button><button data-admin-section="events">Events</button><button data-admin-section="go-gold">Go Gold 2027</button><button data-admin-section="contacts">Messages</button></nav><div class="admin-side-footer"><span id="admin-user"></span><button class="link-button" id="logout">Sign out</button></div></aside><main class="admin-main">
-<section class="admin-section active" data-section="dashboard"><div class="admin-top"><div><span class="eyebrow">Project Golden Child</span><h2>Overview</h2></div><span class="admin-badge">Secure admin</span></div><div class="dashboard-grid"><div class="dash-card"><strong id="sum-heroes">—</strong><span>Harper's Heroes</span></div><div class="dash-card"><strong id="sum-referrals">—</strong><span>New referrals</span></div><div class="dash-card"><strong id="sum-events">—</strong><span>Published upcoming events</span></div><div class="dash-card"><strong id="sum-gold">—</strong><span>Go Gold registrations</span></div><div class="dash-card"><strong id="sum-actions">—</strong><span>Open Hero actions</span></div><div class="dash-card"><strong id="sum-comms">—</strong><span>Communications logged</span></div></div><div class="admin-columns"><section class="panel"><h3>What this version manages</h3><div class="action-row"><div><strong>Referrals</strong><div class="small">Review registrations, record contact and promote consented registrations to Harper's Heroes.</div></div></div><div class="action-row"><div><strong>Recognition</strong><div class="small">Plan welcome packs, awareness-date recognition, gifts, meal vouchers and family contact against each Hero record.</div></div></div><div class="action-row"><div><strong>Communications</strong><div class="small">Keep a clear record of calls, emails, letters, meetings and follow-up with families and referrers.</div></div></div><div class="action-row"><div><strong>Events</strong><div class="small">Draft, publish, complete and archive events. Published records drive the public events page.</div></div></div><div class="action-row"><div><strong>Event stories</strong><div class="small">Use typed or dictated notes to create a draft. Nothing is published until you choose to publish the event.</div></div></div></section><section class="panel"><h3>Privacy by design</h3><p class="small">The public site cannot query Hero or referral tables directly. Sensitive data is returned only through authenticated admin endpoints. Changes to key records are written to the audit log.</p></section></div>
+<div class="admin-shell" hidden="" id="admin-app"><div class="admin-frame"><aside class="admin-side"><a class="brand" href="/"><span class="brandmark brandmark-pgc"><img alt="" src="/assets/project-golden-child-mark.png?v=2.1.2"/></span><span class="brand-copy"><strong>Project Golden Child</strong><span>Secure administration</span></span></a><nav aria-label="Admin sections" class="admin-menu"><button class="active" data-admin-section="dashboard">Dashboard</button><button data-admin-section="referrals">Referrals <span id="ref-count"></span></button><button data-admin-section="heroes">Harper's Heroes</button><button data-admin-section="communications">Communications</button><button data-admin-section="appointments">Appointments</button><button data-admin-section="events">Events</button><button data-admin-section="go-gold">Go Gold 2027</button><button data-admin-section="contacts">Messages</button></nav><div class="admin-side-footer"><span id="admin-user"></span><button class="link-button" id="logout">Sign out</button></div></aside><main class="admin-main">
+<section class="admin-section active" data-section="dashboard"><div class="admin-top"><div><span class="eyebrow">Project Golden Child</span><h2>Overview</h2></div><span class="admin-badge">Secure admin</span></div><div class="dashboard-grid"><div class="dash-card"><strong id="sum-heroes">—</strong><span>Harper's Heroes</span></div><div class="dash-card"><strong id="sum-referrals">—</strong><span>New referrals</span></div><div class="dash-card"><strong id="sum-events">—</strong><span>Published upcoming events</span></div><div class="dash-card"><strong id="sum-gold">—</strong><span>Go Gold registrations</span></div><div class="dash-card"><strong id="sum-actions">—</strong><span>Open Hero actions</span></div><div class="dash-card"><strong id="sum-comms">—</strong><span>Communications logged</span></div><div class="dash-card"><strong id="sum-appointments">—</strong><span>Upcoming appointments</span></div><div class="dash-card"><strong id="sum-followups">—</strong><span>Follow-ups due</span></div></div><div class="admin-columns"><section class="panel"><h3>What this version manages</h3><div class="action-row"><div><strong>Referrals</strong><div class="small">Review registrations, record contact and promote consented registrations to Harper's Heroes.</div></div></div><div class="action-row"><div><strong>Recognition</strong><div class="small">Plan welcome packs, awareness-date recognition, gifts, meal vouchers and family contact against each Hero record.</div></div></div><div class="action-row"><div><strong>Communications</strong><div class="small">Send direct or consented group emails and keep a clear delivery/contact trail against each family record.</div></div></div><div class="action-row"><div><strong>Appointments</strong><div class="small">Plan family calls, reviews and meetings with automatic reminders and clear ownership of follow-up.</div></div></div><div class="action-row"><div><strong>Events</strong><div class="small">Draft, publish, complete and archive events. Published records drive the public events page.</div></div></div><div class="action-row"><div><strong>Event stories</strong><div class="small">Use typed or dictated notes to create a draft. Nothing is published until you choose to publish the event.</div></div></div></section><section class="panel"><h3>Privacy by design</h3><p class="small">The public site cannot query Hero or referral tables directly. Sensitive data is returned only through authenticated admin endpoints. Changes to key records are written to the audit log.</p></section></div>
 <section class="panel"><div class="admin-card-row"><div><span class="eyebrow">System health</span><h3>Submission connection</h3><p class="small" id="system-health-text">Checking database access…</p></div><button class="btn btn-outline" id="check-system-health" type="button">Check now</button></div><div class="small" id="system-health-detail"></div></section><section class="panel admin-guide">
 <span class="eyebrow">Where website submissions go</span>
 <h3>Everything submitted through the public website is reviewed here.</h3>
@@ -19,34 +19,38 @@
 
 <section class="admin-section" data-section="communications">
   <div class="admin-top">
-    <div><span class="eyebrow">Contact history</span><h2>Communications</h2></div>
-    <button class="btn btn-primary" id="new-communication" type="button">Log communication</button>
+    <div><span class="eyebrow">Family contact</span><h2>Communications</h2><p class="small">Send an email directly from Project Golden Child or record contact made elsewhere. Every entry stays linked to the family record.</p></div>
+    <button class="btn btn-primary" id="new-communication" type="button">New communication</button>
   </div>
-  <div class="privacy-strip">Use this area to record operational contact with families and referrers. Keep notes factual, relevant and proportionate.</div>
+  <div class="privacy-strip">Use only the information needed for the purpose of the message. Before sending, verify the recipient and check that sharing the content is necessary.</div>
   <div class="communications-grid">
     <form class="panel communication-editor" id="communication-editor">
       <input id="comm-id" type="hidden"/>
       <div class="editor-head">
-        <div><span class="eyebrow">Communication log</span><h3 id="comm-editor-title">Log communication</h3></div>
+        <div><span class="eyebrow">Message or contact log</span><h3 id="comm-editor-title">New communication</h3></div>
         <button class="link-button" id="clear-communication" type="button">Clear</button>
       </div>
       <div class="field-grid">
         <div class="field full">
+          <label for="comm-action">What do you want to do?</label>
+          <select id="comm-action"><option value="log">Record contact only</option><option value="send">Send an email and record it</option></select>
+        </div>
+        <div class="field full">
           <label for="comm-link">Linked child / referral, optional</label>
           <select id="comm-link"><option value="">Not linked to a record</option></select>
         </div>
-        <div class="field">
+        <div class="field comm-log-only">
           <label for="comm-direction">Direction</label>
           <select id="comm-direction"><option value="outbound">Outbound</option><option value="inbound">Inbound</option></select>
         </div>
-        <div class="field">
+        <div class="field comm-log-only">
           <label for="comm-method">Method</label>
           <select id="comm-method">
             <option>Email</option><option>Phone</option><option>SMS / WhatsApp</option>
             <option>Letter</option><option>In person</option><option>Video call</option><option>Other</option>
           </select>
         </div>
-        <div class="field">
+        <div class="field comm-log-only">
           <label for="comm-occurred">Date &amp; time</label>
           <input id="comm-occurred" type="datetime-local"/>
         </div>
@@ -62,7 +66,7 @@
           <label for="comm-contact-email">Email</label>
           <input id="comm-contact-email" type="email"/>
         </div>
-        <div class="field">
+        <div class="field comm-log-only">
           <label for="comm-contact-phone">Phone</label>
           <input id="comm-contact-phone"/>
         </div>
@@ -71,23 +75,85 @@
           <input id="comm-subject" required/>
         </div>
         <div class="field full">
-          <label for="comm-notes">Notes</label>
+          <label for="comm-notes" id="comm-notes-label">Notes</label>
           <textarea id="comm-notes" required></textarea>
         </div>
-        <div class="field full">
+        <div class="field full comm-log-only">
           <label for="comm-outcome">Outcome / next step</label>
           <textarea id="comm-outcome"></textarea>
         </div>
       </div>
+      <div class="send-checks" id="comm-send-checks" hidden>
+        <label><input id="comm-recipient-verified" type="checkbox"/> I have checked that the recipient email address is correct.</label>
+        <label><input id="comm-sharing-necessary" type="checkbox"/> I have checked that the information in this email is necessary and appropriate to share with this recipient.</label>
+      </div>
       <div class="error-box" id="comm-error" hidden></div>
       <div class="form-actions">
-        <span class="small">Communication records remain private within the secure admin area.</span>
-        <button class="btn btn-primary" type="submit">Save communication</button>
+        <span class="small" id="comm-email-state">Communication records remain private within the secure admin area.</span>
+        <button class="btn btn-primary" id="comm-submit" type="submit">Save communication</button>
       </div>
     </form>
     <div>
-      <div class="admin-top compact-top"><div><h3>Communication history</h3></div><button class="btn btn-outline" data-refresh="communications" type="button">Refresh</button></div>
+      <div class="admin-top compact-top"><div><h3>Communication history</h3><p class="small">Sent, logged and failed email attempts are retained for a clear contact trail.</p></div><button class="btn btn-outline" data-refresh="communications" type="button">Refresh</button></div>
       <div class="admin-list" id="communications-list"></div>
+    </div>
+  </div>
+  <section class="panel bulk-communications-panel">
+    <div class="admin-top compact-top"><div><span class="eyebrow">Consented audience</span><h3>Email a group safely</h3><p class="small">Each family receives a separate email. Addresses are never exposed to other families.</p></div></div>
+    <form id="bulk-communication-form">
+      <div class="field-grid">
+        <div class="field"><label for="bulk-audience">Audience</label><select id="bulk-audience"><option value="updates">Families who consented to project updates</option><option value="events">Families who consented to event invitations</option></select></div>
+        <div class="field"><label for="bulk-subject">Subject</label><input id="bulk-subject" required/></div>
+        <div class="field full"><label for="bulk-message">Message</label><textarea id="bulk-message" class="large-textarea" required></textarea></div>
+      </div>
+      <div class="send-checks">
+        <label><input id="bulk-recipient-verified" type="checkbox"/> I am using the selected consent category for the purpose described in this message.</label>
+        <label><input id="bulk-sharing-necessary" type="checkbox"/> I have checked that the information is necessary and appropriate for this audience.</label>
+      </div>
+      <div class="error-box" id="bulk-error" hidden></div>
+      <div class="form-actions"><span class="small" id="bulk-state">Maximum 100 recipients in one send.</span><button class="btn btn-primary" type="submit">Send individual emails</button></div>
+    </form>
+  </section>
+</section>
+
+<section class="admin-section" data-section="appointments">
+  <div class="admin-top">
+    <div><span class="eyebrow">Operational calendar</span><h2>Appointments &amp; follow-ups</h2><p class="small">Family calls, meetings, reviews and other appointments, linked to the relevant Hero or referral with optional automatic reminders.</p></div>
+    <button class="btn btn-primary" id="new-appointment" type="button">Add appointment</button>
+  </div>
+  <div class="appointments-grid">
+    <form class="panel appointment-editor" id="appointment-editor">
+      <input id="appointment-id" type="hidden"/>
+      <div class="editor-head"><div><span class="eyebrow">Appointment</span><h3 id="appointment-editor-title">Add appointment</h3></div><button class="link-button" id="clear-appointment" type="button">Clear</button></div>
+      <div class="field-grid">
+        <div class="field full"><label for="appointment-link">Linked child / referral, optional</label><select id="appointment-link"><option value="">Not linked to a record</option></select></div>
+        <div class="field"><label for="appointment-type">Type</label><select id="appointment-type"><option>Family contact</option><option>Welcome call</option><option>Event planning</option><option>Support review</option><option>Professional meeting</option><option>Trustee / charity meeting</option><option>Other</option></select></div>
+        <div class="field"><label for="appointment-title">Appointment title</label><input id="appointment-title" required placeholder="For example, welcome call"/></div>
+        <div class="field"><label for="appointment-with">Meeting / call with</label><input id="appointment-with" required/></div>
+        <div class="field"><label for="appointment-email">Family/contact email, optional</label><input id="appointment-email" type="email"/></div>
+        <div class="field"><label for="appointment-date">Date</label><input id="appointment-date" type="date" required/></div>
+        <div class="field"><label for="appointment-time">Start time</label><input id="appointment-time" type="time" required value="10:00"/></div>
+        <div class="field"><label for="appointment-end-time">End time, optional</label><input id="appointment-end-time" type="time"/></div>
+        <div class="field full"><label for="appointment-location">Location / method</label><input id="appointment-location" required placeholder="Phone, Teams, family home, venue…"/></div>
+        <div class="field full"><label for="appointment-notes">Internal notes, optional</label><textarea id="appointment-notes"></textarea></div>
+      </div>
+      <div class="appointment-reminder-box">
+        <strong>Automatic reminders</strong>
+        <div class="reminder-options"><label><input id="appointment-reminder-admin" type="checkbox" checked/> Admin email</label><label><input id="appointment-reminder-family" type="checkbox"/> Family/contact email</label></div>
+        <div class="reminder-options"><label><input id="appointment-reminder-24h" type="checkbox" checked/> 24 hours before</label><label><input id="appointment-reminder-morning" type="checkbox" checked/> 08:00 on the day</label><label><input id="appointment-reminder-30m" type="checkbox" checked/> 30 minutes before</label></div>
+        <p class="small" id="appointment-reminder-state">Reminders use the configured Project Golden Child email service.</p>
+      </div>
+      <div class="error-box" id="appointment-error" hidden></div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit" id="appointment-submit">Save appointment</button></div>
+    </form>
+    <div>
+      <section class="panel calendar-panel">
+        <div class="calendar-head"><div><span class="eyebrow">Month view</span><h3>Calendar</h3></div><input id="calendar-month" type="month"/></div>
+        <div class="calendar-weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        <div class="appointment-calendar" id="appointment-calendar"></div>
+      </section>
+      <div class="admin-top compact-top upcoming-head"><div><h3>Upcoming appointments</h3></div><button class="btn btn-outline" data-refresh="appointments" type="button">Refresh</button></div>
+      <div class="admin-list" id="appointments-list"></div>
     </div>
   </div>
 </section>

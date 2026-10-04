@@ -14,3 +14,9 @@
 - [ ] Email notifications contain references only and no diagnosis/medical detail.
 - [ ] Mobile navigation and accessibility checked.
 - [ ] Domain, HTTPS and sender email verified.
+- [ ] Supabase System Health reports schema `2.5.0` with all checks passing.
+- [ ] Resend sender domain/from address verified and a test direct email delivered correctly.
+- [ ] Bulk communications tested with fictional consented records; opt-out/preference changes immediately alter the audience.
+- [ ] `CRON_SECRET` configured and the appointment reminder endpoint returns 200 only with the Vercel cron authorisation header.
+- [ ] Appointment reminders tested with fictional admin/family email addresses before enabling them for real families.
+- [ ] Full delivery address wording and retention/use are covered by the Project Golden Child DPIA/privacy review.

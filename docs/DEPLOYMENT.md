@@ -9,3 +9,8 @@
 7. Deploy to Preview first and test every route and form before promoting to Production.
 
 The production API fails closed if Supabase is not configured. Do not accept real family information against the local JSON development database.
+
+
+## v2.5.0 email and appointment settings
+
+For platform email and appointment reminders also configure `RESEND_API_KEY`, `FROM_EMAIL`, `NOTIFICATION_EMAIL`, optional `REPLY_TO_EMAIL`, optional `APPOINTMENT_ADMIN_EMAIL`, and a long random `CRON_SECRET`. Existing live databases must run `supabase/UPDATE_v2.5.0.sql` before the v2.5.0 code is deployed.

@@ -93,6 +93,21 @@
     },
     "api/admin-event-transcribe.js": {
       "maxDuration": 60
+    },
+    "api/admin-communications.js": {
+      "maxDuration": 60
+    },
+    "api/admin-appointments.js": {
+      "maxDuration": 60
+    },
+    "api/appointment-reminders.js": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/appointment-reminders",
+      "schedule": "15 6 * * *"
+    }
+  ]
 }

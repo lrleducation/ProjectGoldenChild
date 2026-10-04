@@ -26,6 +26,9 @@ module.exports = async function(req,res){
         if(b.status !== undefined) patch.status = cleanText(b.status,40);
         if(b.admin_notes !== undefined) patch.admin_notes = cleanText(b.admin_notes,4000);
         if(b.contacted_at !== undefined) patch.contacted_at = cleanText(b.contacted_at,80) || null;
+        for(const key of ['submitter_name','submitter_email','submitter_phone','address_line_1','address_line_2','town_city','county','postcode']) {
+          if(b[key] !== undefined) patch[key] = cleanText(b[key],180);
+        }
 
         const row = await store.update('referrals',id,patch);
         if(!row) return json(res,404,{message:'Referral not found.'});
@@ -57,6 +60,11 @@ module.exports = async function(req,res){
           preferred_name:ref.preferred_name,
           date_of_birth:ref.date_of_birth,
           postcode_prefix:ref.postcode_prefix,
+          address_line_1:ref.address_line_1,
+          address_line_2:ref.address_line_2,
+          town_city:ref.town_city,
+          county:ref.county,
+          postcode:ref.postcode,
           life_status:ref.life_status,
           cancer_type:ref.cancer_type,
           diagnosis_date_text:ref.diagnosis_date_text,

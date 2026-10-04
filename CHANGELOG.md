@@ -1,3 +1,18 @@
+# v2.5.0 — CRACLL-derived family communications and appointments
+
+- Upgraded the private Communications area from a contact log into a direct email and delivery-audit workflow.
+- Added individual bulk email to consented updates/event audiences without exposing recipients to one another.
+- Added recipient-verification and information-sharing confirmations before any platform email can be sent.
+- Added communication follow-up completion tracking and overdue follow-up dashboard reporting.
+- Added a private appointments calendar linked to Harper's Heroes and referral records.
+- Added automatic appointment reminder scheduling for administrators and, when selected, the family/contact email.
+- Added full family delivery addresses to registration and Harper's Heroes records for welcome packs and gifts.
+- Added secure admin correction of family contact and address information.
+- Added admin correction of family communication preferences so an opt-out immediately changes consent-filtered group audiences.
+- Added a daily reminder-staging endpoint protected by `CRON_SECRET` and configured through Vercel Cron.
+- Updated the privacy notice for delivery addresses, appointments and reminder emails.
+- Database schema is now v2.5.0. Existing installations must run `supabase/UPDATE_v2.5.0.sql` before deployment.
+
 # v2.4.1 — Supabase project URL normalisation
 
 - Fixed the root cause of the Storage 404 seen when `SUPABASE_URL` is saved as a Data API URL such as `https://PROJECT.supabase.co/rest/v1`.

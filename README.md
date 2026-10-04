@@ -1,3 +1,11 @@
+# v2.5.0 communications and appointments
+
+This release adapts the strongest operational patterns from the CRACLL app to Project Golden Child without changing PGC into a Next.js application. It adds direct and consent-aware email communication, communication follow-up tracking, a family-linked appointments calendar, automatic email reminders and full delivery addresses for welcome packs/gifts.
+
+For an existing v2.x deployment, run `supabase/UPDATE_v2.5.0.sql` before deploying and then follow `UPDATE_STEPS_v2.5.0.txt`. New installations can use `supabase/schema.sql`.
+
+The new email features require server-side `RESEND_API_KEY` and `FROM_EMAIL`. Appointment reminder staging also requires `CRON_SECRET`. None of these values are exposed to the browser.
+
 # v2.4.0 Storage transport
 
 Event posters and photographs now use a raw Supabase Storage transport that understands
