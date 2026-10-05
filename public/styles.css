@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
 :root{
   --ink:#2a190e;
@@ -914,13 +914,1115 @@ p{margin:0 0 1rem}
   .event-review-gallery{grid-template-columns:1fr 1fr}
 }
 
-/* v2.5.1 referral confirmation guidance */
-.submission-email-note {
-  margin-top: 1rem;
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(174, 131, 26, 0.35);
-  border-radius: 14px;
-  background: rgba(255, 248, 224, 0.72);
-  color: inherit;
-  line-height: 1.55;
+
+/* =====================================================================
+   v2.5.0 — MEDALLION BRAND REDESIGN
+   Built around the approved circular Project Golden Child emblem.
+   Public website only: all existing forms, APIs, admin and event logic remain.
+   ===================================================================== */
+
+:root{
+  --ink:#2e2115;
+  --muted:#756858;
+  --paper:#fffdf8;
+  --cream:#fbf4e8;
+  --cream-2:#f3e4c9;
+  --porcelain:#fffefa;
+  --gold:#c98a12;
+  --gold-bright:#efc968;
+  --gold-2:#e4af39;
+  --gold-dark:#7b4a05;
+  --gold-deep:#5f3605;
+  --brown:#3b250f;
+  --deep:#1f140b;
+  --line:rgba(145,92,12,.19);
+  --line-strong:rgba(145,92,12,.34);
+  --shadow:0 18px 50px rgba(74,44,9,.10);
+  --shadow-gold:0 24px 70px rgba(143,90,8,.18);
+  --radius:26px;
+  --container:min(1200px,calc(100vw - 40px));
+}
+
+body{
+  position:relative;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(238,201,116,.10),transparent 26rem),
+    radial-gradient(circle at 92% 28%,rgba(234,180,67,.08),transparent 30rem),
+    var(--paper);
+  color:var(--ink);
+  font-family:'DM Sans',Arial,sans-serif;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.38;
+  background-image:
+    radial-gradient(circle at 8% 18%,rgba(205,145,24,.15) 0 1px,transparent 1.5px),
+    radial-gradient(circle at 71% 8%,rgba(205,145,24,.11) 0 1px,transparent 1.5px),
+    radial-gradient(circle at 87% 63%,rgba(205,145,24,.10) 0 1px,transparent 1.5px);
+  background-size:92px 92px,137px 137px,173px 173px;
+}
+
+h1,h2,h3,.form-title,.footer h4,.story-quote,.statement{
+  font-family:'Cormorant Garamond',Georgia,serif;
+}
+
+h1{
+  color:#563207;
+  font-size:clamp(3.5rem,6.4vw,6.6rem);
+  letter-spacing:-.045em;
+  line-height:.94;
+}
+
+h2{
+  color:#4c2d0b;
+  font-size:clamp(2.7rem,4.7vw,4.7rem);
+  letter-spacing:-.035em;
+  line-height:.98;
+}
+
+h3{color:#4f3214}
+
+.topbar{
+  position:relative;
+  overflow:hidden;
+  padding:9px 18px;
+  background:
+    linear-gradient(90deg,#1d130b 0%,#5a350d 50%,#1d130b 100%);
+  border-bottom:1px solid rgba(238,202,116,.42);
+  color:#f9e7bd;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.topbar::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,230,163,.12) 50%,transparent 65%);
+}
+
+.header{
+  background:rgba(255,253,248,.93);
+  border-bottom:1px solid rgba(138,84,5,.14);
+  box-shadow:0 10px 30px rgba(70,43,11,.05);
+  backdrop-filter:blur(18px) saturate(1.15);
+}
+
+.nav{min-height:98px}
+
+.brand{
+  gap:12px;
+  min-width:285px;
+  height:92px;
+}
+
+.brandmark{
+  position:relative;
+  width:76px;
+  height:76px;
+  flex:0 0 76px;
+  border-radius:50%;
+}
+
+.brandmark::before{
+  content:"";
+  position:absolute;
+  inset:-4px;
+  border-radius:50%;
+  border:1px solid rgba(190,126,16,.24);
+  box-shadow:0 6px 20px rgba(107,66,7,.11);
+}
+
+.brandmark img{
+  border-radius:50%;
+  filter:drop-shadow(0 6px 9px rgba(96,56,5,.16));
+}
+
+.brand-copy strong{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  color:#65400d;
+  font-size:1.38rem;
+  font-weight:700;
+  letter-spacing:.015em;
+}
+
+.brand-copy>span{
+  color:#96733a;
+  font-size:.62rem;
+  font-weight:700;
+  letter-spacing:.14em;
+}
+
+.navlinks{
+  gap:22px;
+  color:#554737;
+  font-size:13px;
+  font-weight:700;
+}
+
+.navlinks>a::after{
+  bottom:20px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.navlinks .nav-cta{
+  position:relative;
+  overflow:hidden;
+  min-width:126px;
+  padding:13px 19px;
+  border:1px solid rgba(255,232,165,.50);
+  border-radius:999px;
+  background:linear-gradient(135deg,#e8b94b 0%,#bd7806 54%,#8f5300 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 9px 25px rgba(132,78,3,.18);
+}
+
+.navlinks .nav-cta::before,
+.btn-primary::before,
+.btn-gold::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform:translateX(-120%);
+  background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.30),transparent 70%);
+  transition:transform .55s ease;
+}
+
+.navlinks .nav-cta:hover::before,
+.btn-primary:hover::before,
+.btn-gold:hover::before{transform:translateX(120%)}
+
+.eyebrow{
+  position:relative;
+  margin-bottom:16px;
+  color:#97620d;
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.22em;
+}
+
+.eyebrow::before{
+  content:"";
+  display:inline-block;
+  width:24px;
+  height:1px;
+  margin:0 10px 3px 0;
+  background:linear-gradient(90deg,rgba(151,98,13,0),#b97b11);
+}
+
+.btn{
+  position:relative;
+  overflow:hidden;
+  min-height:50px;
+  padding-inline:24px;
+  border-radius:999px;
+  font-size:.94rem;
+  box-shadow:none;
+}
+
+.btn-primary,.btn-gold{
+  border-color:rgba(255,235,180,.44);
+  background:linear-gradient(135deg,#e8b94b 0%,#bf7907 58%,#8a4d00 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.36),
+    0 12px 28px rgba(137,80,4,.16);
+}
+
+.btn-outline{
+  color:#754807;
+  border-color:rgba(146,91,8,.28);
+  background:rgba(255,255,255,.68);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+  backdrop-filter:blur(8px);
+}
+
+.btn-outline:hover{
+  background:#fffaf0;
+  border-color:rgba(146,91,8,.46);
+}
+
+/* Home hero */
+.hero{
+  min-height:720px;
+  border-bottom:1px solid rgba(132,79,5,.12);
+  background:
+    radial-gradient(circle at 76% 45%,rgba(255,237,182,.88) 0 7%,rgba(239,195,96,.32) 29%,transparent 50%),
+    radial-gradient(circle at 7% 0%,rgba(244,220,165,.35),transparent 32%),
+    linear-gradient(118deg,#fffefa 0%,#fbf3e4 48%,#eed39a 100%);
+}
+
+.hero::before{
+  inset:-15% -14% auto auto;
+  width:690px;
+  height:690px;
+  background:
+    radial-gradient(circle,rgba(255,248,222,.88) 0 22%,rgba(235,185,69,.19) 52%,transparent 71%);
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.42;
+  background-image:
+    radial-gradient(circle at 77% 20%,rgba(255,255,255,.95) 0 2px,transparent 2.6px),
+    radial-gradient(circle at 87% 44%,rgba(255,255,255,.90) 0 1.5px,transparent 2.1px),
+    radial-gradient(circle at 66% 73%,rgba(255,255,255,.82) 0 1.5px,transparent 2.1px),
+    radial-gradient(circle at 94% 76%,rgba(255,255,255,.85) 0 2px,transparent 2.6px);
+}
+
+.hero-grid{
+  min-height:720px;
+  grid-template-columns:1fr .96fr;
+  gap:38px;
+}
+
+.hero-copy{
+  position:relative;
+  z-index:2;
+  padding:78px 0;
+}
+
+.hero-copy h1{
+  max-width:700px;
+  color:#4a2b08;
+  text-wrap:balance;
+}
+
+.hero-copy .lead{
+  max-width:650px;
+  margin-top:28px;
+  color:#665847;
+  font-size:clamp(1.06rem,1.5vw,1.24rem);
+}
+
+.hero-note{
+  display:inline-flex;
+  align-items:center;
+  max-width:620px;
+  margin-top:24px;
+  padding:11px 16px;
+  border:1px solid rgba(161,104,13,.20);
+  border-left:3px solid #d6a12f;
+  border-radius:0 999px 999px 0;
+  background:rgba(255,255,255,.50);
+  color:#77634e;
+  backdrop-filter:blur(8px);
+}
+
+.hero-brand-stage{
+  isolation:isolate;
+  min-height:650px;
+  padding:56px 0;
+}
+
+.hero-brand-stage::before{
+  content:"";
+  position:absolute;
+  width:min(610px,48vw);
+  aspect-ratio:1;
+  border-radius:50%;
+  border:1px solid rgba(183,120,15,.26);
+  box-shadow:
+    0 0 0 13px rgba(255,255,255,.30),
+    0 0 0 14px rgba(183,120,15,.09),
+    0 35px 90px rgba(120,73,8,.18);
+  z-index:-1;
+}
+
+.hero-brand-stage::after{
+  content:"";
+  position:absolute;
+  width:min(510px,41vw);
+  aspect-ratio:1;
+  border-radius:50%;
+  z-index:-2;
+  background:radial-gradient(circle,#fff7db 0%,rgba(239,194,91,.35) 42%,transparent 72%);
+  filter:blur(2px);
+}
+
+.hero-brand-logo{
+  width:min(600px,48vw);
+  max-height:none;
+  border-radius:50%;
+  object-fit:contain;
+  box-shadow:none;
+  filter:drop-shadow(0 30px 42px rgba(96,55,5,.18));
+}
+
+/* General page heroes */
+.page-hero{
+  isolation:isolate;
+  padding:92px 0 100px;
+  background:
+    radial-gradient(circle at 82% 42%,rgba(237,196,104,.28),transparent 26rem),
+    linear-gradient(118deg,#fffefa 0%,#fbf3e6 56%,#f1dfb9 100%);
+}
+
+.page-hero::before{
+  content:"";
+  position:absolute;
+  top:50%;
+  right:max(-80px,calc((100vw - 1220px)/2 - 100px));
+  width:min(470px,36vw);
+  aspect-ratio:1;
+  transform:translateY(-50%);
+  border-radius:50%;
+  background:none;
+  opacity:.10;
+  filter:saturate(.75);
+  z-index:-1;
+}
+
+.page-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 92% 23%,rgba(255,255,255,.92) 0 2px,transparent 2.5px),
+    radial-gradient(circle at 73% 70%,rgba(255,255,255,.78) 0 1.4px,transparent 2px);
+}
+
+.page-hero>.container{position:relative;z-index:1}
+.page-hero h1{
+  max-width:860px;
+  color:#4b2d0b!important;
+  text-wrap:balance;
+}
+
+.breadcrumbs{
+  color:#9b783e;
+  font-weight:600;
+}
+
+.breadcrumbs a{color:#704409}
+
+/* Gold-edged content surfaces */
+.section{padding:96px 0}
+
+.section.alt{
+  background:
+    radial-gradient(circle at 12% 20%,rgba(233,191,95,.13),transparent 24rem),
+    linear-gradient(180deg,#fcf7ef 0%,#f8edda 100%);
+  border-block-color:rgba(137,82,8,.10);
+}
+
+.section.dark{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 78% 20%,rgba(224,169,48,.20),transparent 24rem),
+    radial-gradient(circle at 18% 100%,rgba(180,113,7,.12),transparent 28rem),
+    linear-gradient(140deg,#1c120a 0%,#38220c 55%,#25160a 100%);
+}
+
+.section.dark::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.18;
+  background:
+    radial-gradient(circle at 12% 28%,#ffe8a8 0 1px,transparent 1.8px),
+    radial-gradient(circle at 81% 60%,#ffe8a8 0 1px,transparent 1.8px);
+  background-size:90px 90px,137px 137px;
+}
+
+.section.dark>.container{position:relative;z-index:1}
+
+.pillar,.event-feature,.event-mini,.stat,
+.form-card,.dark-form,.legal-card,.principle,.step,
+.callout,.impact-banner,.memory-panel,
+.poster-event-card,.event-review-card,.loading-card{
+  border:1px solid rgba(163,105,13,.22);
+  background:
+    linear-gradient(#fffefa,#fffefa) padding-box,
+    linear-gradient(135deg,rgba(238,199,107,.55),rgba(138,82,5,.08),rgba(226,177,67,.38)) border-box;
+  box-shadow:
+    0 18px 45px rgba(75,44,8,.08),
+    inset 0 1px 0 rgba(255,255,255,.90);
+}
+
+.pillar{
+  overflow:hidden;
+  padding:32px;
+  border-radius:28px;
+}
+
+.pillar::after{
+  content:"";
+  position:absolute;
+  width:120px;
+  height:120px;
+  right:-42px;
+  bottom:-48px;
+  border-radius:50%;
+  border:1px solid rgba(192,127,16,.11);
+  box-shadow:0 0 0 14px rgba(192,127,16,.035);
+}
+
+.pillar .num{color:rgba(127,74,4,.23)}
+.pillar-icon{
+  border:1px solid rgba(255,232,169,.62);
+  background:radial-gradient(circle at 32% 25%,#f6d875 0%,#d39b24 42%,#925300 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.58),
+    0 9px 22px rgba(142,84,4,.16);
+}
+
+.story-card{
+  min-height:450px;
+  border:1px solid rgba(139,84,7,.24);
+  border-radius:36px;
+  background:
+    radial-gradient(circle at 35% 24%,rgba(255,255,255,.72),transparent 24%),
+    linear-gradient(145deg,#f3dc9e 0%,#c78d21 56%,#8c5207 100%)!important;
+  box-shadow:var(--shadow-gold);
+}
+
+.story-card::after{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border:1px solid rgba(255,245,210,.44);
+  border-radius:27px;
+  pointer-events:none;
+}
+
+.story-quote{
+  font-size:clamp(1.7rem,2.8vw,2.5rem);
+  color:#fffdf3;
+}
+
+.statement{
+  border-left:0;
+  border:1px solid rgba(165,106,12,.20);
+  border-radius:20px;
+  background:
+    linear-gradient(115deg,#fffaf0 0%,#f8e8c6 100%);
+  color:#643b08;
+  box-shadow:inset 4px 0 0 #c78a14;
+}
+
+.stats{gap:16px}
+.stat{
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(245,213,138,.20);
+  background:rgba(255,255,255,.075);
+  backdrop-filter:blur(10px);
+}
+.stat::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(130deg,rgba(255,255,255,.09),transparent 60%);
+}
+.stat strong{color:#f3d083}
+
+.callout,.impact-banner,.memory-panel{
+  border-radius:34px;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(239,197,96,.22),transparent 17rem),
+    linear-gradient(145deg,#fffefa,#f9ecd1);
+  box-shadow:0 22px 58px rgba(83,49,6,.10);
+}
+
+.event-art{
+  background:
+    radial-gradient(circle at 82% 18%,rgba(255,255,255,.45),transparent 18%),
+    linear-gradient(135deg,#f0d691,#bd7d13);
+}
+
+.event-art.gold{
+  background:
+    radial-gradient(circle at 78% 20%,rgba(255,255,255,.36),transparent 18%),
+    linear-gradient(135deg,#f5d06e,#9a5904);
+}
+
+.event-date{
+  border:1px solid rgba(139,86,8,.16);
+  border-radius:999px;
+  box-shadow:0 8px 18px rgba(95,56,7,.12);
+}
+
+.tag{
+  border:1px solid rgba(167,107,10,.15);
+  background:#fff5dc;
+}
+
+/* Harper's Heroes medallion treatment */
+.cape-stage{
+  position:relative;
+  min-height:470px;
+}
+
+.cape-stage::before{
+  content:"";
+  position:absolute;
+  width:min(430px,38vw);
+  aspect-ratio:1;
+  border-radius:50%;
+  border:1px solid rgba(174,112,13,.20);
+  box-shadow:0 0 0 13px rgba(255,255,255,.36),0 18px 50px rgba(94,56,8,.12);
+}
+
+.cape-stage img{
+  position:relative;
+  width:min(440px,90%);
+  max-width:440px;
+  border-radius:50%;
+  filter:drop-shadow(0 22px 34px rgba(89,52,6,.15));
+}
+
+.cape-note{
+  max-width:410px;
+  margin:18px auto 0;
+  text-align:center;
+}
+
+/* Forms */
+.form-aside{
+  border:1px solid rgba(232,196,119,.16);
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 18% 4%,rgba(224,167,45,.16),transparent 30%),
+    linear-gradient(160deg,#21150b,#3a240d);
+  box-shadow:0 20px 45px rgba(50,28,7,.14);
+}
+
+.progress-item{
+  border-radius:999px;
+}
+
+.progress-item.active{
+  border-color:rgba(255,231,164,.34);
+  background:linear-gradient(135deg,#dcaa36,#9f5b03);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.form-card,.dark-form,.legal-card{
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(238,201,116,.10),transparent 20rem),
+    #fffefa;
+}
+
+.form-title{
+  color:#573409;
+  font-size:2.25rem;
+}
+
+.field input,.field select,.field textarea{
+  border:1px solid #dac6a6;
+  border-radius:14px;
+  background:rgba(255,255,255,.92);
+  box-shadow:inset 0 1px 2px rgba(92,55,10,.03);
+}
+
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:#c38a1c;
+  box-shadow:0 0 0 4px rgba(201,143,31,.12);
+}
+
+.route-card{
+  border-radius:18px;
+  background:#fffdf8;
+}
+.route-card.selected{
+  border-color:#b97b10;
+  background:linear-gradient(145deg,#fffaf0,#f8e8c6);
+  box-shadow:0 10px 24px rgba(103,61,5,.08);
+}
+
+.contact-notes>div,.privacy-note{
+  border-color:rgba(153,97,10,.18);
+  border-radius:18px;
+  background:linear-gradient(145deg,#fffaf0,#f7ead3);
+}
+
+/* Tabs and public events */
+.tabs{
+  display:inline-flex;
+  padding:5px;
+  border:1px solid rgba(150,94,9,.18);
+  border-radius:999px;
+  background:#f8ecd7;
+}
+.tab{
+  border-radius:999px!important;
+}
+.tab.active{
+  color:white!important;
+  background:linear-gradient(135deg,#dca836,#985604)!important;
+  box-shadow:0 6px 16px rgba(111,65,5,.13);
+}
+
+.poster-event-card,.event-review-card{
+  border-radius:28px;
+}
+
+.event-poster-link,.event-review-poster{
+  background:linear-gradient(145deg,#f6ecdc,#fffefa);
+}
+
+.review-metric{
+  border-color:rgba(163,105,13,.20);
+  background:linear-gradient(145deg,#fff9ea,#f7ead0);
+}
+
+/* Footer */
+.footer{
+  position:relative;
+  overflow:hidden;
+  padding:54px 0 28px;
+  border-top:1px solid rgba(231,194,113,.22);
+  background:
+    radial-gradient(circle at 12% 18%,rgba(224,169,48,.12),transparent 20rem),
+    radial-gradient(circle at 82% 84%,rgba(224,169,48,.09),transparent 22rem),
+    linear-gradient(145deg,#1d130b,#34210d 58%,#21150b);
+  color:#efe4d1;
+}
+
+.footer::after{
+  content:"";
+  position:absolute;
+  right:-110px;
+  top:-130px;
+  width:420px;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:none;
+  opacity:.055;
+}
+
+.footer>.container{position:relative;z-index:1}
+.footer .brand-copy strong,.footer h4{color:#f0cc78}
+.footer .brand-copy>span{color:#bfa77d}
+.footer p,.footer .small,.footer-grid>div:not(:first-child) a,.footer-bottom{color:#cfc1ae}
+.footer-grid>div:not(:first-child) a:hover{color:#f2cf7d}
+.footer-bottom{border-color:rgba(240,204,120,.17)}
+.footer .brandmark::before{border-color:rgba(236,202,124,.22)}
+
+/* Mobile */
+@media(max-width:980px){
+  .navlinks{
+    padding:16px 20px 24px;
+    background:rgba(255,253,248,.98);
+    border-bottom:1px solid rgba(141,86,8,.16);
+  }
+
+  .hero-grid{grid-template-columns:1fr}
+  .hero-copy{padding:68px 0 18px}
+  .hero-brand-stage{min-height:540px;padding:24px 0 58px}
+  .hero-brand-stage::before{width:min(590px,78vw)}
+  .hero-brand-stage::after{width:min(500px,68vw)}
+  .hero-brand-logo{width:min(570px,76vw)}
+  .page-hero::before{
+    right:-110px;
+    width:390px;
+    opacity:.065;
+  }
+}
+
+@media(max-width:650px){
+  :root{--container:min(100vw - 28px,1200px)}
+  .topbar{letter-spacing:.045em;font-size:10px}
+  .nav{min-height:82px}
+  .brand{height:78px;gap:9px}
+  .brandmark{width:60px;height:60px;flex-basis:60px}
+  .brand-copy strong{font-size:1.08rem}
+  .brand-copy>span{font-size:.49rem;letter-spacing:.105em}
+  .menu-toggle{font-size:26px}
+
+  .hero{
+    min-height:auto;
+    background:
+      radial-gradient(circle at 52% 80%,rgba(241,201,107,.36),transparent 18rem),
+      linear-gradient(180deg,#fffefa 0%,#f8ecd6 100%);
+  }
+  .hero-copy{padding:56px 0 10px}
+  .hero-copy h1{font-size:clamp(3.1rem,15vw,4.8rem)}
+  .hero-copy .lead{margin-top:22px}
+  .hero-brand-stage{min-height:390px;padding:20px 0 45px}
+  .hero-brand-stage::before{width:min(355px,88vw);box-shadow:0 0 0 8px rgba(255,255,255,.34),0 0 0 9px rgba(183,120,15,.09),0 25px 55px rgba(120,73,8,.15)}
+  .hero-brand-stage::after{width:min(310px,78vw)}
+  .hero-brand-logo{width:min(340px,84vw)}
+
+  .page-hero{padding:68px 0 76px}
+  .page-hero::before{right:-120px;width:310px;opacity:.05}
+  .page-hero h1{font-size:clamp(3rem,14vw,4.5rem)!important}
+
+  .section{padding:68px 0}
+  .section h2{font-size:clamp(2.6rem,12vw,3.5rem)}
+  .pillar,.callout,.impact-banner,.memory-panel,.form-card,.dark-form,.legal-card{border-radius:22px}
+  .pillars{gap:14px}
+  .footer{padding-top:42px}
+}
+
+/* =====================================================================
+   v2.5.1 — CAPE LOGO + LUXURY STARLIGHT VISUAL SYSTEM
+   Keep the established cape logo. Use the medallion image only as visual
+   inspiration: pearl ivory, soft gold ribbons, tiny stars and warm light.
+   ===================================================================== */
+
+:root{
+  --pgc-pearl:#fffdf8;
+  --pgc-pearl-warm:#fbf3e4;
+  --pgc-champagne:#f2ddb0;
+  --pgc-gold:#c78912;
+  --pgc-gold-light:#f1cf76;
+  --pgc-gold-deep:#7c4804;
+  --pgc-ink:#312216;
+  --pgc-night:#21150b;
+}
+
+body{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,255,255,.98) 0 9rem,transparent 31rem),
+    radial-gradient(circle at 8% 16%,rgba(244,211,132,.14),transparent 27rem),
+    radial-gradient(circle at 94% 42%,rgba(207,143,24,.08),transparent 30rem),
+    linear-gradient(180deg,#fffefb 0%,#fbf5e9 46%,#fffdf8 100%);
+}
+
+/* Fine starlight layer. It remains subtle enough that copy stays calm. */
+body::before{
+  z-index:-2;
+  opacity:.72;
+  background-image:
+    radial-gradient(circle at 13% 12%,rgba(194,129,14,.45) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 63% 9%,rgba(255,215,117,.80) 0 1.2px,transparent 1.9px),
+    radial-gradient(circle at 84% 24%,rgba(182,112,5,.32) 0 .8px,transparent 1.5px),
+    radial-gradient(circle at 21% 69%,rgba(239,190,73,.40) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 74% 78%,rgba(207,143,24,.32) 0 1px,transparent 1.7px);
+  background-size:137px 137px,211px 211px,179px 179px,247px 247px,313px 313px;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-3;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 110% 8%,transparent 0 53%,rgba(214,155,37,.075) 53.5% 54.3%,transparent 55% 61%,rgba(239,204,119,.055) 61.5% 62%,transparent 62.7%),
+    radial-gradient(ellipse at -14% 88%,transparent 0 60%,rgba(197,125,8,.055) 60.5% 61.2%,transparent 62% 68%,rgba(240,205,123,.04) 68.5% 69.1%,transparent 70%);
+}
+
+/* Restore the cape as the navigation brandmark, without a medallion frame. */
+.brand{
+  min-width:320px;
+  gap:12px;
+}
+.brandmark{
+  width:108px;
+  height:68px;
+  flex:0 0 108px;
+  border-radius:0;
+  overflow:visible;
+}
+.brandmark::before{display:none!important}
+.brandmark img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:0!important;
+  filter:drop-shadow(0 7px 11px rgba(99,57,4,.18));
+}
+.brand-copy strong{color:#5b3509}
+.brand-copy>span{color:#99733a}
+
+.header{
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.92),rgba(255,251,240,.96),rgba(255,255,255,.92));
+  box-shadow:0 12px 35px rgba(74,43,7,.055),inset 0 -1px 0 rgba(210,150,35,.08);
+}
+
+.header::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-1px;height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(203,139,18,.42),rgba(247,220,153,.65),rgba(203,139,18,.42),transparent);
+}
+
+/* Homepage: the full cape wordmark now floats in warm pearlescent light. */
+.hero{
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 78% 38%,rgba(255,255,255,.98) 0 7rem,rgba(255,246,214,.75) 16rem,transparent 34rem),
+    radial-gradient(circle at 18% 8%,rgba(248,221,157,.18),transparent 28rem),
+    linear-gradient(115deg,#fffefa 0%,#fcf5e7 56%,#f4e1b9 100%);
+}
+
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.90;
+  background:
+    radial-gradient(circle at 84% 13%,rgba(255,255,255,.98) 0 2.2px,transparent 3px),
+    radial-gradient(circle at 70% 20%,rgba(219,155,31,.72) 0 1.4px,transparent 2.1px),
+    radial-gradient(circle at 92% 32%,rgba(255,225,139,.92) 0 1.8px,transparent 2.5px),
+    radial-gradient(circle at 76% 62%,rgba(198,126,7,.40) 0 1.2px,transparent 2px),
+    radial-gradient(circle at 57% 76%,rgba(255,222,129,.80) 0 1.7px,transparent 2.5px),
+    radial-gradient(circle at 18% 30%,rgba(231,177,62,.25) 0 1px,transparent 1.8px);
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  width:770px;
+  height:770px;
+  right:-285px;
+  top:-280px;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:.72;
+  background:
+    conic-gradient(from 208deg,
+      transparent 0 58%,
+      rgba(191,119,5,.15) 59% 60.1%,
+      rgba(250,224,157,.42) 60.4% 61%,
+      transparent 61.5% 67%,
+      rgba(218,158,42,.13) 67.5% 68.2%,
+      transparent 69% 100%);
+  filter:blur(.1px);
+}
+
+.hero-grid{grid-template-columns:.92fr 1.08fr;gap:24px}
+.hero-brand-stage{
+  position:relative;
+  min-height:650px;
+  padding:52px 0 48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.hero-brand-stage::before{
+  content:"";
+  position:absolute;
+  width:min(760px,55vw);
+  height:min(520px,38vw);
+  border:0;
+  border-radius:48%;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse at center,rgba(255,255,255,.98) 0%,rgba(255,250,231,.90) 33%,rgba(245,211,126,.28) 63%,transparent 76%);
+  box-shadow:none;
+  filter:blur(.2px);
+}
+.hero-brand-stage::after{
+  content:"";
+  position:absolute;
+  width:min(720px,53vw);
+  height:min(500px,37vw);
+  border-radius:46%;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 22% 28%,rgba(241,190,68,.45) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 73% 17%,rgba(255,226,145,.86) 0 1.6px,transparent 2.4px),
+    radial-gradient(circle at 82% 62%,rgba(194,119,4,.42) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 39% 77%,rgba(255,218,119,.76) 0 1.3px,transparent 2.1px);
+  background-size:83px 83px,149px 149px,121px 121px,173px 173px;
+  opacity:.72;
+  filter:none;
+}
+.hero-brand-logo{
+  width:min(760px,55vw);
+  max-height:none;
+  border-radius:0!important;
+  object-fit:contain;
+  box-shadow:none;
+  filter:drop-shadow(0 26px 38px rgba(99,57,4,.20));
+}
+
+/* Internal heroes: use gold sweeps and stars, not a logo watermark. */
+.page-hero{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 84% 34%,rgba(255,255,255,.96) 0 5rem,rgba(247,220,151,.28) 17rem,transparent 31rem),
+    radial-gradient(circle at 10% 15%,rgba(238,194,92,.13),transparent 26rem),
+    linear-gradient(116deg,#fffefa 0%,#fbf4e7 57%,#f2dfb7 100%);
+}
+.page-hero::before{
+  content:"";
+  position:absolute;
+  top:-300px;
+  right:-230px;
+  width:690px;
+  height:690px;
+  transform:none;
+  border-radius:50%;
+  background:
+    conic-gradient(from 214deg,
+      transparent 0 58%,
+      rgba(192,119,4,.14) 59% 60.1%,
+      rgba(249,221,151,.48) 60.4% 61.1%,
+      transparent 61.7% 68%,
+      rgba(214,151,30,.12) 68.6% 69.4%,
+      transparent 70% 100%);
+  opacity:.86;
+  filter:none;
+  z-index:0;
+}
+.page-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.80;
+  background:
+    radial-gradient(circle at 89% 18%,rgba(255,255,255,.98) 0 2px,transparent 2.8px),
+    radial-gradient(circle at 77% 31%,rgba(211,143,17,.52) 0 1.1px,transparent 1.9px),
+    radial-gradient(circle at 94% 55%,rgba(255,222,130,.86) 0 1.6px,transparent 2.4px),
+    radial-gradient(circle at 70% 77%,rgba(193,119,5,.34) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 18% 66%,rgba(234,179,59,.22) 0 1px,transparent 1.8px);
+}
+
+/* Main content surfaces retain light and space; decoration stays around them. */
+.section{
+  position:relative;
+  background:rgba(255,253,248,.72);
+}
+.section:not(.dark)::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.34;
+  background:
+    radial-gradient(circle at 7% 22%,rgba(214,153,35,.35) 0 1px,transparent 1.7px),
+    radial-gradient(circle at 91% 68%,rgba(239,202,112,.50) 0 1px,transparent 1.8px);
+  background-size:211px 211px,277px 277px;
+}
+.section>.container{position:relative;z-index:1}
+.section.alt{
+  background:
+    radial-gradient(circle at 82% 16%,rgba(255,255,255,.72),transparent 19rem),
+    radial-gradient(circle at 12% 76%,rgba(239,195,94,.14),transparent 24rem),
+    linear-gradient(180deg,rgba(252,247,237,.97),rgba(246,234,209,.92));
+}
+
+.section.dark{
+  background:
+    radial-gradient(circle at 76% 18%,rgba(231,183,75,.19),transparent 22rem),
+    radial-gradient(circle at 16% 82%,rgba(179,111,7,.11),transparent 27rem),
+    linear-gradient(140deg,#1b1109 0%,#38230e 56%,#211309 100%);
+}
+.section.dark::after{
+  opacity:.40;
+  background:
+    radial-gradient(circle at 11% 16%,rgba(255,224,144,.82) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 78% 21%,rgba(233,184,77,.58) 0 1.1px,transparent 1.9px),
+    radial-gradient(circle at 88% 71%,rgba(255,226,147,.72) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 32% 81%,rgba(205,137,17,.52) 0 1px,transparent 1.8px);
+  background-size:103px 103px,161px 161px,211px 211px,137px 137px;
+}
+
+/* Pearl-card finish inspired by the pale centre of the badge. */
+.pillar,.event-feature,.event-mini,.stat,
+.form-card,.dark-form,.legal-card,.principle,.step,
+.callout,.impact-banner,.memory-panel,
+.poster-event-card,.event-review-card,.loading-card{
+  border:1px solid rgba(173,111,13,.22);
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.98),transparent 13rem),
+    linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,249,235,.94));
+  box-shadow:
+    0 20px 52px rgba(76,44,8,.085),
+    0 2px 0 rgba(255,255,255,.82) inset;
+}
+
+.pillar::before,.callout::before,.impact-banner::before,
+.form-card::before,.legal-card::before,.memory-panel::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.23;
+  background:
+    radial-gradient(circle at 86% 13%,rgba(201,132,11,.58) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 94% 26%,rgba(255,216,117,.90) 0 1.2px,transparent 2px);
+}
+
+/* Forms remain intentionally restrained for readability. */
+.form-card,.dark-form,.legal-card{
+  backdrop-filter:blur(9px);
+}
+input,select,textarea{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(174,112,14,.30)!important;
+  box-shadow:inset 0 1px 2px rgba(116,68,5,.035);
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#c68912!important;
+  box-shadow:0 0 0 3px rgba(213,157,47,.13)!important;
+}
+
+/* Footer: premium dark-gold night sky rather than a badge panel. */
+.footer{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 82% 10%,rgba(232,184,76,.18),transparent 20rem),
+    linear-gradient(145deg,#1a1008 0%,#36210d 55%,#201209 100%);
+}
+.footer::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.52;
+  background:
+    radial-gradient(circle at 9% 22%,rgba(255,226,151,.78) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 64% 14%,rgba(222,163,46,.58) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 91% 62%,rgba(255,225,142,.70) 0 1px,transparent 1.8px),
+    radial-gradient(circle at 36% 82%,rgba(203,135,16,.48) 0 1px,transparent 1.8px);
+  background-size:119px 119px,173px 173px,229px 229px,151px 151px;
+}
+.footer>.container{position:relative;z-index:1}
+.footer .brandmark{width:118px;height:72px;flex-basis:118px}
+
+/* Remove any leftover circular-medallion assumptions. */
+.brandmark-pgc,.brandmark-pgc img{border-radius:0!important}
+
+@media(max-width:980px){
+  .brand{min-width:0}
+  .brandmark{width:94px;height:58px;flex-basis:94px}
+  .hero-grid{grid-template-columns:1fr}
+  .hero-brand-stage{min-height:470px;padding:6px 0 54px}
+  .hero-brand-stage::before{width:min(760px,88vw);height:min(520px,61vw)}
+  .hero-brand-stage::after{width:min(700px,82vw);height:min(470px,56vw)}
+  .hero-brand-logo{width:min(760px,90vw)}
+}
+
+@media(max-width:650px){
+  .nav{min-height:82px}
+  .brand{height:76px;gap:8px}
+  .brandmark{width:82px;height:51px;flex-basis:82px}
+  .brand-copy strong{font-size:1.12rem}
+  .brand-copy>span{font-size:.52rem;letter-spacing:.09em}
+  .hero-brand-stage{min-height:330px;padding:0 0 34px}
+  .hero-brand-stage::before{width:96vw;height:63vw}
+  .hero-brand-stage::after{width:90vw;height:58vw}
+  .hero-brand-logo{width:96vw;max-width:610px}
+  .page-hero::before{width:500px;height:500px;right:-300px;top:-260px}
+  .footer .brandmark{width:92px;height:56px;flex-basis:92px}
 }

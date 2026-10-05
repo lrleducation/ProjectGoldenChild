@@ -1,0 +1,51 @@
+PROJECT GOLDEN CHILD v2.4.2 — FAMILY ADDRESS UPDATE
+
+WHY
+Parent/carer registrations now collect the delivery address at the point a child joins
+Harper's Heroes. This avoids needing a second contact merely to obtain an address before
+sending a welcome pack, gift or recognition item.
+
+NEW REQUIRED FIELDS
+- Address line 1
+- Town or city
+- Postcode
+- Country
+
+OPTIONAL
+- Address line 2
+- County
+
+ADMIN
+The address is visible only inside the secure admin area.
+It is copied into the Harper's Heroes record when a registration is promoted.
+A Hero's postal address can subsequently be corrected using:
+  Harper's Heroes -> Update postal address
+
+INSTALL IN THIS ORDER
+
+1. Supabase -> SQL Editor -> New query.
+2. Run:
+   supabase/UPDATE_v2.4.2_FAMILY_ADDRESS.sql
+
+3. The final query should return ZERO ROWS.
+
+4. Replace the current website files with the v2.4.2 package.
+5. Keep the hidden .git folder.
+6. GitHub Desktop commit:
+   Project Golden Child v2.4.2 family address
+7. Commit to main -> Push origin.
+8. Wait for Vercel to show Ready.
+9. Ctrl+F5 once on the public registration page and /admin.
+10. Admin -> System Health -> Check now.
+
+EXPECTED:
+  Database ready — schema 2.4.2. Read and write checks passed.
+
+TEST
+Use fictional details to submit one parent/carer registration.
+Confirm:
+- the form requires address line 1, town/city, postcode and country
+- the registration succeeds
+- the full postal address appears in Admin -> Referrals
+- promoting the test registration to Harper's Heroes carries the address across
+- Update postal address works on the Hero record

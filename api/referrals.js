@@ -51,7 +51,8 @@ module.exports = async function handler(req,res){
     if(route === 'parent') {
       const required = [
         'submitter_name','submitter_relationship','submitter_email',
-        'child_name','date_of_birth','address_line_1','town_city','postcode','life_status','cancer_type'
+        'child_name','date_of_birth','address_line_1','town_city',
+        'address_postcode','address_country','life_status','cancer_type'
       ];
 
       for(const key of required) {
@@ -77,12 +78,15 @@ module.exports = async function handler(req,res){
         child_name:cleanText(b.child_name,160),
         preferred_name:cleanText(b.preferred_name,100),
         date_of_birth:cleanText(b.date_of_birth,20) || null,
-        postcode_prefix:cleanText(b.postcode || b.postcode_prefix,16).toUpperCase().split(/\s+/)[0],
-        address_line_1:cleanText(b.address_line_1,180),
-        address_line_2:cleanText(b.address_line_2,180),
-        town_city:cleanText(b.town_city,120),
-        county:cleanText(b.county,120),
-        postcode:cleanText(b.postcode,16).toUpperCase(),
+        address_line_1:cleanText(b.address_line_1,220),
+        address_line_2:cleanText(b.address_line_2,220),
+        town_city:cleanText(b.town_city,160),
+        county:cleanText(b.county,160),
+        address_postcode:cleanText(b.address_postcode,20).toUpperCase(),
+        address_country:cleanText(b.address_country,100) || 'United Kingdom',
+        // Retain this legacy field because other parts of the site use it
+        // for geographic reporting. It now mirrors the full postal postcode.
+        postcode_prefix:cleanText(b.address_postcode,20).toUpperCase(),
         life_status:cleanText(b.life_status,120),
         cancer_type:cleanText(b.cancer_type,180),
         diagnosis_date_text:cleanText(b.diagnosis_date_text,100),

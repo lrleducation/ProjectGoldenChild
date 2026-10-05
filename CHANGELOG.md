@@ -1,37 +1,41 @@
-# v2.6.0 — selected-recipient communications and poster attachments
+# v2.5.1 — Cape logo restored + luxury starlight visual system
 
-- Communications can now target individual children, multiple children or all eligible Harper’s Heroes.
-- Recipient selection is consent-aware for project updates, event invitations and recognition communications.
-- Added a safeguarded essential/service communication purpose for necessary non-promotional family contact.
-- Siblings sharing the same family email receive one message while the communication is logged against each selected child.
-- Direct and group emails can include PNG, JPEG, WebP or PDF poster attachments up to 10 MB.
-- Attachments are stored in a private Supabase bucket and delivered through short-lived signed URLs.
-- Communication history now retains attachment metadata and can reopen the sent attachment.
-- System Health now checks the communication attachment bucket/signing path as well as the new database columns.
-- Database schema is now v2.6.0; run `supabase/UPDATE_v2.6.0.sql` before deployment.
+- Restored the established Project Golden Child cape-and-wordmark logo as the primary brand identity.
+- The circular medallion is no longer used as the website logo, navigation mark, footer mark or favicon.
+- Retained the strongest visual inspiration from the medallion artwork: pearl-ivory light, fine gold sweeps, warm luminous gradients, subtle stars and restrained glitter.
+- Rebuilt the homepage hero so the original transparent cape logo sits within a soft cinematic glow rather than inside a circular badge treatment.
+- Reworked standard page heroes so they use elegant gold arcs and starlight rather than a medallion watermark.
+- Refined light sections, alternate sections, cards, forms and event surfaces with a pearl-gold finish while keeping text areas calm and readable.
+- Dark sections and the footer now use a deep brown night-sky treatment with subtle gold stars.
+- The decorative treatment is CSS-driven and does not add a heavy background image download to every page.
+- Existing v2.4.2 functionality remains intact, including family addresses, referrals, communications, events, poster/photo uploads and AI event reviews.
+- No Supabase migration is required. Database schema remains v2.4.2.
 
-# v2.5.1 — dashboard repair and referral confirmation
+# v2.5.0 — Medallion brand redesign
 
-- Repaired dashboard totals so referrals remain counted after promotion to Harper’s Heroes.
-- Added a separate `newReferrals` count for the Referrals navigation badge.
-- Made dashboard core counts resilient if an optional communications or appointments table is temporarily unavailable or has not yet been migrated.
-- Added post-submission guidance asking families/referrers to check junk or spam and add Project Golden Child to their contacts/safe-senders list, particularly because initial communications may contain attachments.
-- No database migration is required for v2.5.1.
+- Rebuilt the public website visual system around the approved circular Project Golden Child medallion artwork supplied by Adam.
+- The medallion is now the primary website brand asset on the homepage, navigation, footer, Harper's Heroes page and favicon.
+- Reworked the public colour system around ivory, warm cream, bronze, polished gold and deep brown, matching the new emblem rather than the earlier flat cape branding.
+- Added restrained circular ring, glow and sparkle motifs inspired by the medallion while keeping body copy and form areas calm and readable.
+- Redesigned the homepage hero to present the medallion as a focal seal with a layered halo rather than placing the artwork inside a rectangular image card.
+- Restyled page heroes with a subtle medallion watermark so the visual identity carries consistently through Our Story, Harper's Heroes, Events, Go Gold, registration, contact and privacy pages.
+- Refined buttons, cards, statistics, forms, event panels, tabs and footer surfaces with thin gold edging and softer premium shadows.
+- Responsive behaviour has been updated so the medallion remains proportionate and unclipped on tablet and mobile.
+- Existing v2.4.2 functionality is unchanged, including family postal addresses, events, uploads, AI event reviews, referrals, communications and admin.
+- No Supabase migration is required for this release.
 
-# v2.5.0 — CRACLL-derived family communications and appointments
+# v2.4.2 — Family postal address
 
-- Upgraded the private Communications area from a contact log into a direct email and delivery-audit workflow.
-- Added individual bulk email to consented updates/event audiences without exposing recipients to one another.
-- Added recipient-verification and information-sharing confirmations before any platform email can be sent.
-- Added communication follow-up completion tracking and overdue follow-up dashboard reporting.
-- Added a private appointments calendar linked to Harper's Heroes and referral records.
-- Added automatic appointment reminder scheduling for administrators and, when selected, the family/contact email.
-- Added full family delivery addresses to registration and Harper's Heroes records for welcome packs and gifts.
-- Added secure admin correction of family contact and address information.
-- Added admin correction of family communication preferences so an opt-out immediately changes consent-filtered group audiences.
-- Added a daily reminder-staging endpoint protected by `CRON_SECRET` and configured through Vercel Cron.
-- Updated the privacy notice for delivery addresses, appointments and reminder emails.
-- Database schema is now v2.5.0. Existing installations must run `supabase/UPDATE_v2.5.0.sql` before deployment.
+- Parent/carer Harper's Heroes registration now collects a full private postal/delivery address.
+- Required fields: address line 1, town/city, postcode and country.
+- Optional fields: address line 2 and county.
+- Registration wording explains that the address is used for welcome packs, gifts, recognition items and relevant correspondence and is not published.
+- The full address is stored on the initial parent/carer registration and carried into the Harper's Heroes record when the child is promoted.
+- Existing `postcode_prefix` reporting remains compatible and mirrors the submitted full postcode for new registrations.
+- Admin Referral records now display the postal/delivery address within the sensitive details section.
+- Harper's Heroes records now display the postal/delivery address and include an Update postal address action.
+- Privacy information has been updated to state that the family postal address is collected and used for sending Project Golden Child items.
+- Schema version is now 2.4.2.
 
 # v2.4.1 — Supabase project URL normalisation
 

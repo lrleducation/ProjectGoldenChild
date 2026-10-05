@@ -1,4 +1,4 @@
-const { json, readBody, cleanText, bool } = require('../lib/http');
+const { json, readBody, cleanText } = require('../lib/http');
 const { requireAdmin } = require('../lib/security');
 const store = require('../lib/store');
 const { audit } = require('../lib/audit');
@@ -56,13 +56,17 @@ module.exports = async function(req,res){
       if(b.action === 'update-hero') {
         const id = cleanText(b.id,80);
         const patch = {};
-        for(const key of ['status','admin_notes','primary_contact_name','primary_contact_email','primary_contact_phone','address_line_1','address_line_2','town_city','county','postcode']) {
+        for(const key of [
+          'status','admin_notes','primary_contact_name','primary_contact_email','primary_contact_phone',
+          'address_line_1','address_line_2','town_city','county','address_postcode','address_country'
+        ]) {
           if(b[key] !== undefined) {
-            patch[key] = cleanText(b[key],key === 'admin_notes' ? 4000 : 180);
+            patch[key] = cleanText(
+              b[key],
+              key === 'admin_notes' ? 4000 : (key.startsWith('address_') ? 220 : 180)
+            );
+            if(key === 'address_postcode') patch[key] = patch[key].toUpperCase();
           }
-        }
-        for(const key of ['consent_recognition','consent_events','consent_updates','consent_media_interest']) {
-          if(b[key] !== undefined) patch[key] = bool(b[key]);
         }
         const item = await store.update('heroes',id,patch);
         if(!item) return json(res,404,{message:'Hero not found.'});

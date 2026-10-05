@@ -7,12 +7,20 @@
   const fmt = iso => iso
     ? new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso))
     : '—';
+
+  const postalAddress = record => [
+    record?.address_line_1,
+    record?.address_line_2,
+    record?.town_city,
+    record?.county,
+    record?.address_postcode,
+    record?.address_country
+  ].filter(Boolean).join(', ') || '—';
   const localDateTime = iso => {
     const d = iso ? new Date(iso) : new Date();
     const pad = n => String(n).padStart(2,'0');
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
-  const addressText = record => [record?.address_line_1,record?.address_line_2,record?.town_city,record?.county,record?.postcode].filter(Boolean).join(', ');
 
   const api = async (url, options={}) => {
     const opts = { credentials:'same-origin', ...options };
@@ -94,7 +102,6 @@
     referrals:loadReferrals,
     heroes:loadHeroes,
     communications:loadCommunications,
-    appointments:loadAppointments,
     events:loadEvents,
     'go-gold':loadGoGold,
     contacts:loadContacts
@@ -135,8 +142,6 @@
           `${key}: ${value.ok ? 'OK' : `${value.code || value.status || 'error'} ${value.detail || ''}`}`
         );
         checks.push(`write test: ${d.write?.ok ? 'OK' : `${d.write?.code || d.write?.status || 'error'} ${d.write?.detail || ''}`}`);
-        checks.push(`event storage: ${d.storage?.ok ? 'OK' : `${d.storage?.status || 'error'} ${d.storage?.detail || 'bucket/signing check failed'}`}`);
-        checks.push(`communication attachments: ${d.communicationStorage?.ok ? 'OK' : `${d.communicationStorage?.status || 'error'} ${d.communicationStorage?.detail || 'bucket/signing check failed'}`}`);
         checks.push(`email alerts: ${d.configuration?.emailConfigured ? 'configured' : 'not configured (database submissions still save)'}`);
         detail.textContent = checks.join(' · ');
       }
@@ -158,9 +163,7 @@
       $('#sum-gold').textContent = d.gold;
       $('#sum-actions').textContent = d.actions;
       $('#sum-comms').textContent = d.communications;
-      $('#sum-appointments').textContent = d.appointments ?? 0;
-      $('#sum-followups').textContent = d.followups ?? 0;
-      $('#ref-count').textContent = d.newReferrals ? `(${d.newReferrals})` : '';
+      $('#ref-count').textContent = d.referrals ? `(${d.referrals})` : '';
     } catch(err) {
       console.error(err);
     }
@@ -203,10 +206,10 @@
           ${r.route === 'parent' ? `
             <details>
               <summary>View sensitive registration details</summary>
+              <p><b>Postal / delivery address:</b><br>${esc(postalAddress(r))}</p>
               <p><b>Diagnosis timing:</b> ${esc(r.diagnosis_date_text || '—')}</p>
               <p><b>Journey notes:</b> ${esc(r.journey_notes || '—')}</p>
               <p><b>Interests:</b> ${esc(r.interests || '—')}</p>
-              <p><b>Delivery address:</b> ${esc(addressText(r) || 'Not supplied')}</p>
               <p><b>Consents:</b> recognition ${r.consent_recognition ? 'Yes' : 'No'}, events ${r.consent_events ? 'Yes' : 'No'}, updates ${r.consent_updates ? 'Yes' : 'No'}, media interest ${r.consent_media_interest ? 'Yes' : 'No'}</p>
             </details>
           ` : `
@@ -215,9 +218,7 @@
           `}
           <div class="admin-item-actions">
             <button class="btn btn-outline" data-ref-contact="${r.id}">Mark contacted</button>
-            <button class="btn btn-outline" data-log-ref="${r.id}">Contact family</button>
-            <button class="btn btn-outline" data-appointment-ref="${r.id}">Add appointment</button>
-            ${r.route === 'parent' ? `<button class="btn btn-outline" data-edit-ref-family="${r.id}">Edit contact/address</button>` : ''}
+            <button class="btn btn-outline" data-log-ref="${r.id}">Log communication</button>
             ${r.route === 'parent' && r.consent_heroes && r.consent_health && r.status !== 'promoted'
               ? `<button class="btn btn-primary" data-ref-promote="${r.id}">Promote to Harper's Heroes</button>`
               : ''}
@@ -258,27 +259,9 @@
         });
       }));
 
-      $$('[data-log-ref]').forEach(button => button.addEventListener('click',async() => {
+      $$('[data-log-ref]').forEach(button => button.addEventListener('click',() => {
         activateSection('communications');
-        await loadCommunications();
-        prefillCommunication(`referral:${button.dataset.logRef}`,{send:true});
-      }));
-      $$('[data-appointment-ref]').forEach(button => button.addEventListener('click',async() => {
-        activateSection('appointments');
-        await loadAppointments(); clearAppointmentForm(); prefillAppointmentLink(`referral:${button.dataset.appointmentRef}`);
-      }));
-      $$('[data-edit-ref-family]').forEach(button => button.addEventListener('click',async() => {
-        const r=items.find(x=>x.id===button.dataset.editRefFamily); if(!r)return;
-        const submitter_name=prompt('Parent/carer name:',r.submitter_name||''); if(submitter_name===null)return;
-        const submitter_email=prompt('Email address:',r.submitter_email||''); if(submitter_email===null)return;
-        const submitter_phone=prompt('Phone number:',r.submitter_phone||''); if(submitter_phone===null)return;
-        const address_line_1=prompt('Address line 1:',r.address_line_1||''); if(address_line_1===null)return;
-        const address_line_2=prompt('Address line 2 (optional):',r.address_line_2||''); if(address_line_2===null)return;
-        const town_city=prompt('Town / city:',r.town_city||''); if(town_city===null)return;
-        const county=prompt('County (optional):',r.county||''); if(county===null)return;
-        const postcode=prompt('Postcode:',r.postcode||''); if(postcode===null)return;
-        await api('/api/admin-referrals',{method:'POST',body:{action:'update',id:r.id,submitter_name,submitter_email,submitter_phone,address_line_1,address_line_2,town_city,county,postcode}});
-        loadReferrals();
+        setTimeout(() => prefillCommunication(`referral:${button.dataset.logRef}`),100);
       }));
     } catch(err) {
       list.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
@@ -310,10 +293,10 @@
           </div>
           <details>
             <summary>Private details</summary>
+            <p><b>Postal / delivery address:</b><br>${esc(postalAddress(h))}</p>
             <p><b>Cancer type:</b> ${esc(h.cancer_type || '—')}</p>
             <p><b>Journey notes:</b> ${esc(h.journey_notes || '—')}</p>
             <p><b>Interests:</b> ${esc(h.interests || '—')}</p>
-            <p><b>Delivery address:</b> ${esc(addressText(h) || 'Not supplied')}</p>
           </details>
           <div class="hero-actions-list">
             ${(h.actions || []).map(a => `
@@ -331,9 +314,8 @@
           </div>
           <div class="admin-item-actions">
             <button class="btn btn-outline" data-add-action="${h.id}">Add recognition action</button>
-            <button class="btn btn-outline" data-log-hero="${h.id}">Contact family</button>
-            <button class="btn btn-outline" data-appointment-hero="${h.id}">Add appointment</button>
-            <button class="btn btn-outline" data-edit-hero-family="${h.id}">Edit contact, address & preferences</button>
+            <button class="btn btn-outline" data-edit-address="${h.id}">Update postal address</button>
+            <button class="btn btn-outline" data-log-hero="${h.id}">Log communication</button>
             <button class="btn btn-danger" data-delete-hero="${h.id}" data-delete-name="${esc(h.preferred_name || h.child_name)}">Delete Hero record</button>
           </div>
         </article>
@@ -382,31 +364,47 @@
         });
       }));
 
-      $$('[data-log-hero]').forEach(button => button.addEventListener('click',async() => {
-        activateSection('communications');
-        await loadCommunications();
-        prefillCommunication(`hero:${button.dataset.logHero}`,{send:true});
-      }));
-      $$('[data-appointment-hero]').forEach(button => button.addEventListener('click',async() => {
-        activateSection('appointments');
-        await loadAppointments(); clearAppointmentForm(); prefillAppointmentLink(`hero:${button.dataset.appointmentHero}`);
-      }));
-      $$('[data-edit-hero-family]').forEach(button => button.addEventListener('click',async() => {
-        const h=items.find(x=>x.id===button.dataset.editHeroFamily); if(!h)return;
-        const primary_contact_name=prompt('Parent/carer name:',h.primary_contact_name||''); if(primary_contact_name===null)return;
-        const primary_contact_email=prompt('Email address:',h.primary_contact_email||''); if(primary_contact_email===null)return;
-        const primary_contact_phone=prompt('Phone number:',h.primary_contact_phone||''); if(primary_contact_phone===null)return;
-        const address_line_1=prompt('Address line 1:',h.address_line_1||''); if(address_line_1===null)return;
-        const address_line_2=prompt('Address line 2 (optional):',h.address_line_2||''); if(address_line_2===null)return;
-        const town_city=prompt('Town / city:',h.town_city||''); if(town_city===null)return;
-        const county=prompt('County (optional):',h.county||''); if(county===null)return;
-        const postcode=prompt('Postcode:',h.postcode||''); if(postcode===null)return;
-        const updatesAnswer=prompt('Consent for Project Golden Child updates? Enter yes or no:',h.consent_updates?'yes':'no'); if(updatesAnswer===null)return;
-        const eventsAnswer=prompt('Consent for event invitations? Enter yes or no:',h.consent_events?'yes':'no'); if(eventsAnswer===null)return;
-        const consent_updates=/^(y|yes|true|1)$/i.test(updatesAnswer.trim());
-        const consent_events=/^(y|yes|true|1)$/i.test(eventsAnswer.trim());
-        await api('/api/admin-heroes',{method:'POST',body:{action:'update-hero',id:h.id,primary_contact_name,primary_contact_email,primary_contact_phone,address_line_1,address_line_2,town_city,county,postcode,consent_updates,consent_events}});
+      $$('[data-edit-address]').forEach(button => button.addEventListener('click',async() => {
+        const hero=items.find(item => item.id===button.dataset.editAddress);
+        if(!hero) return;
+
+        const line1=prompt('Address line 1:',hero.address_line_1 || '');
+        if(line1===null) return;
+        const line2=prompt('Address line 2 (optional):',hero.address_line_2 || '');
+        if(line2===null) return;
+        const town=prompt('Town or city:',hero.town_city || '');
+        if(town===null) return;
+        const county=prompt('County (optional):',hero.county || '');
+        if(county===null) return;
+        const postcode=prompt('Postcode:',hero.address_postcode || hero.postcode_prefix || '');
+        if(postcode===null) return;
+        const country=prompt('Country:',hero.address_country || 'United Kingdom');
+        if(country===null) return;
+
+        if(!line1.trim() || !town.trim() || !postcode.trim() || !country.trim()){
+          return alert('Address line 1, town/city, postcode and country are required.');
+        }
+
+        await api('/api/admin-heroes',{
+          method:'POST',
+          body:{
+            action:'update-hero',
+            id:hero.id,
+            address_line_1:line1,
+            address_line_2:line2,
+            town_city:town,
+            county,
+            address_postcode:postcode,
+            address_country:country
+          }
+        });
+
         loadHeroes();
+      }));
+
+      $$('[data-log-hero]').forEach(button => button.addEventListener('click',() => {
+        activateSection('communications');
+        setTimeout(() => prefillCommunication(`hero:${button.dataset.logHero}`),100);
       }));
     } catch(err) {
       list.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
@@ -416,31 +414,10 @@
   // ------------------------------------------------------------
   // Communications
   // ------------------------------------------------------------
-  let communicationsCache = {items:[],heroes:[],referrals:[],emailConfigured:false};
-  let bulkSelectedHeroIds=new Set();
-
-  function syncCommunicationMode() {
-    const sending = $('#comm-action')?.value === 'send';
-    $$('.comm-log-only').forEach(el => el.hidden = sending);
-    const checks = $('#comm-send-checks');
-    if(checks) checks.hidden = !sending;
-    if($('#comm-notes-label')) $('#comm-notes-label').textContent = sending ? 'Email message' : 'Notes';
-    if($('#comm-submit')) $('#comm-submit').textContent = sending ? 'Send email' : 'Save communication';
-    if($('#comm-email-state')) {
-      $('#comm-email-state').textContent = sending
-        ? (communicationsCache.emailConfigured ? 'The email will be sent now and retained in the family communication history.' : 'Email sending is not configured yet. Add the Resend settings in Vercel before using this option.')
-        : 'Communication records remain private within the secure admin area.';
-    }
-    if(sending) {
-      $('#comm-direction').value = 'outbound';
-      $('#comm-method').value = 'Email';
-      $('#comm-occurred').value = localDateTime();
-    }
-  }
+  let communicationsCache = {items:[],heroes:[],referrals:[]};
 
   function clearCommunicationForm() {
     $('#comm-id').value = '';
-    $('#comm-action').value = 'log';
     $('#comm-link').value = '';
     $('#comm-direction').value = 'outbound';
     $('#comm-method').value = 'Email';
@@ -452,17 +429,13 @@
     $('#comm-subject').value = '';
     $('#comm-notes').value = '';
     $('#comm-outcome').value = '';
-    $('#comm-recipient-verified').checked = false;
-    $('#comm-sharing-necessary').checked = false;
-    if($('#comm-attachment')) $('#comm-attachment').value='';
-    if($('#comm-attachment-state')) $('#comm-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB.';
     $('#comm-error').hidden = true;
-    syncCommunicationMode();
   }
 
   function populateCommunicationLinks() {
     const select = $('#comm-link');
     if(!select) return;
+
     const current = select.value;
     const heroOptions = communicationsCache.heroes.map(h =>
       `<option value="hero:${h.id}">Harper’s Hero — ${esc(h.preferred_name || h.child_name || 'Child')}</option>`
@@ -470,14 +443,16 @@
     const referralOptions = communicationsCache.referrals.map(r =>
       `<option value="referral:${r.id}">Referral — ${esc(r.child_name || 'Child')}</option>`
     ).join('');
+
     select.innerHTML = `<option value="">Not linked to a record</option>${heroOptions}${referralOptions}`;
     if([...select.options].some(option => option.value === current)) select.value = current;
   }
 
-  function prefillCommunication(value,{send=false}={}) {
+  function prefillCommunication(value) {
     populateCommunicationLinks();
-    $('#comm-link').value = value || '';
+    $('#comm-link').value = value;
     const [type,id] = String(value || '').split(':');
+
     if(type === 'hero') {
       const hero = communicationsCache.heroes.find(x => x.id === id);
       if(hero) {
@@ -486,6 +461,7 @@
         $('#comm-contact-phone').value = hero.primary_contact_phone || '';
       }
     }
+
     if(type === 'referral') {
       const ref = communicationsCache.referrals.find(x => x.id === id);
       if(ref) {
@@ -494,125 +470,22 @@
         $('#comm-contact-phone').value = ref.submitter_phone || ref.family_contact_phone || '';
       }
     }
-    if(send) $('#comm-action').value = 'send';
-    syncCommunicationMode();
+
     $('#comm-subject').focus();
   }
 
-  function validateCommunicationAttachment(file){
-    if(!file) return;
-    if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)) throw new Error('Attach a PNG, JPEG, WebP or PDF poster.');
-    if(file.size>10*1024*1024) throw new Error('Poster attachments must be under 10 MB.');
-  }
-
-  async function uploadCommunicationAttachment(file,stateElement){
-    if(!file) return null;
-    validateCommunicationAttachment(file);
-    if(stateElement) stateElement.textContent='Preparing poster upload…';
-    const sign=await api('/api/admin-communication-upload-sign',{method:'POST',body:{file_name:file.name,file_size:file.size,mime_type:file.type}});
-    if(stateElement) stateElement.textContent='Uploading poster…';
-    const form=new FormData();
-    form.append('cacheControl','3600');
-    form.append('',file,file.name || 'poster');
-    const response=await fetch(sign.signedUrl,{method:'PUT',headers:{'x-upsert':'false'},body:form});
-    if(!response.ok){
-      const detail=await response.text().catch(()=> '');
-      let readable=detail;
-      try{const parsed=JSON.parse(detail);readable=parsed.message||parsed.error||detail;}catch{}
-      throw new Error(`Poster upload failed (${response.status}). ${readable || 'Please try again.'}`);
-    }
-    if(stateElement) stateElement.textContent=`Attached: ${file.name}`;
-    return {attachment_path:sign.path,attachment_name:file.name,attachment_mime_type:file.type,attachment_size:file.size};
-  }
-
-  function communicationPurpose(){return $('#bulk-purpose')?.value || 'updates';}
-  function consentKeyForPurpose(purpose){return ({updates:'consent_updates',events:'consent_events',recognition:'consent_recognition'})[purpose] || '';}
-  function validFamilyEmail(value){return /^\S+@\S+\.\S+$/.test(String(value||'').trim());}
-  function heroDisplayName(hero){return hero.preferred_name || hero.child_name || 'Child';}
-
-  function heroEligibility(hero,purpose=communicationPurpose()){
-    if(hero.status==='archived') return {eligible:false,reason:'Archived'};
-    if(!validFamilyEmail(hero.primary_contact_email)) return {eligible:false,reason:'No family email'};
-    const key=consentKeyForPurpose(purpose);
-    if(key && !hero[key]) return {eligible:false,reason:'No consent for this purpose'};
-    return {eligible:true,reason:purpose==='service'?'Service contact':'Eligible'};
-  }
-
-  function purposeHelpText(purpose){
-    return ({
-      updates:'Only families who consented to Project Golden Child updates can be selected.',
-      events:'Only families who consented to event invitations can be selected. Use this for event posters.',
-      recognition:'Only families with Harper’s Heroes recognition consent can be selected.',
-      service:'For necessary administrative or family-support contact only. Do not use this option to bypass marketing/event consent.'
-    })[purpose] || '';
-  }
-
-  function selectedBulkHeroes(){
-    return communicationsCache.heroes.filter(hero=>bulkSelectedHeroIds.has(hero.id) && heroEligibility(hero).eligible);
-  }
-
-  function renderBulkRecipients({clearInvalid=false}={}){
-    const picker=$('#bulk-recipient-picker'); if(!picker)return;
-    const purpose=communicationPurpose();
-    $('#bulk-purpose-help').textContent=purposeHelpText(purpose);
-    $('#bulk-service-check-wrap').hidden=purpose!=='service';
-    if(purpose!=='service') $('#bulk-service-confirmed').checked=false;
-
-    const search=String($('#bulk-recipient-search')?.value||'').trim().toLowerCase();
-    const heroes=communicationsCache.heroes.filter(h=>h.status!=='archived');
-    if(clearInvalid){
-      for(const id of [...bulkSelectedHeroIds]){
-        const hero=communicationsCache.heroes.find(h=>h.id===id);
-        if(!hero || !heroEligibility(hero,purpose).eligible) bulkSelectedHeroIds.delete(id);
-      }
-    }
-
-    const visible=heroes.filter(hero=>{
-      if(!search) return true;
-      return `${heroDisplayName(hero)} ${hero.primary_contact_name||''} ${hero.primary_contact_email||''}`.toLowerCase().includes(search);
-    });
-
-    picker.innerHTML=visible.length ? visible.map(hero=>{
-      const eligibility=heroEligibility(hero,purpose);
-      const checked=bulkSelectedHeroIds.has(hero.id) && eligibility.eligible;
-      return `<label class="recipient-row ${eligibility.eligible?'':'ineligible'}">
-        <input type="checkbox" data-bulk-hero="${hero.id}" ${checked?'checked':''} ${eligibility.eligible?'':'disabled'}/>
-        <span class="recipient-main"><strong>${esc(heroDisplayName(hero))}</strong><span>${esc(hero.primary_contact_name || 'Family contact')} · ${esc(hero.primary_contact_email || 'No email')}</span></span>
-        <span class="recipient-consent ${eligibility.eligible?'':'warning'}">${esc(eligibility.reason)}</span>
-      </label>`;
-    }).join('') : '<div class="loading-card">No children match this search.</div>';
-
-    $$('[data-bulk-hero]').forEach(box=>box.addEventListener('change',()=>{
-      if(box.checked) bulkSelectedHeroIds.add(box.dataset.bulkHero); else bulkSelectedHeroIds.delete(box.dataset.bulkHero);
-      updateBulkRecipientSummary();
-    }));
-    updateBulkRecipientSummary();
-  }
-
-  function updateBulkRecipientSummary(){
-    const selected=selectedBulkHeroes();
-    const uniqueEmails=new Set(selected.map(h=>String(h.primary_contact_email||'').trim().toLowerCase()));
-    const eligible=communicationsCache.heroes.filter(h=>h.status!=='archived' && heroEligibility(h).eligible);
-    $('#bulk-recipient-summary').textContent=`${selected.length} child${selected.length===1?'':'ren'} selected · ${uniqueEmails.size} family email${uniqueEmails.size===1?'':'s'} · ${eligible.length} eligible for this purpose.`;
-  }
-
-  $('#comm-action')?.addEventListener('change',syncCommunicationMode);
   $('#comm-link')?.addEventListener('change',event => prefillCommunication(event.target.value));
   $('#new-communication')?.addEventListener('click',clearCommunicationForm);
   $('#clear-communication')?.addEventListener('click',clearCommunicationForm);
-  $('#comm-attachment')?.addEventListener('change',event=>{
-    const file=event.target.files?.[0];
-    try{validateCommunicationAttachment(file);$('#comm-attachment-state').textContent=file?`Ready to attach: ${file.name}`:'PNG, JPEG, WebP or PDF, up to 10 MB.';}catch(err){event.target.value='';$('#comm-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB.';alert(err.message);}
-  });
 
   $('#communication-editor')?.addEventListener('submit',async event => {
     event.preventDefault();
     $('#comm-error').hidden = true;
+
     const link = $('#comm-link').value;
     const [type,id] = link ? link.split(':') : ['',''];
-    const sending = $('#comm-action').value === 'send';
+
     const body = {
-      action:sending ? 'send-email' : undefined,
       hero_id:type === 'hero' ? id : '',
       referral_id:type === 'referral' ? id : '',
       direction:$('#comm-direction').value,
@@ -624,230 +497,63 @@
       contact_phone:$('#comm-contact-phone').value,
       subject:$('#comm-subject').value,
       notes:$('#comm-notes').value,
-      outcome:$('#comm-outcome').value,
-      recipient_verified:$('#comm-recipient-verified').checked,
-      sharing_necessary:$('#comm-sharing-necessary').checked
+      outcome:$('#comm-outcome').value
     };
-    const button=$('#comm-submit'); const previous=button.textContent;
+
     try {
-      button.disabled=true;
-      if(sending){
-        const file=$('#comm-attachment').files?.[0] || null;
-        Object.assign(body,await uploadCommunicationAttachment(file,$('#comm-attachment-state')) || {});
-        button.textContent='Sending…';
-      }
       await api('/api/admin-communications',{method:'POST',body});
       clearCommunicationForm();
       await loadCommunications();
       loadSummary();
     } catch(err) {
       showMessage($('#comm-error'),err.message);
-    } finally {button.disabled=false;button.textContent=previous;syncCommunicationMode();}
+    }
   });
-
-  $('#bulk-purpose')?.addEventListener('change',()=>{bulkSelectedHeroIds.clear();renderBulkRecipients({clearInvalid:true});});
-  $('#bulk-recipient-search')?.addEventListener('input',()=>renderBulkRecipients());
-  $('#bulk-select-all')?.addEventListener('click',()=>{
-    for(const hero of communicationsCache.heroes) if(heroEligibility(hero).eligible) bulkSelectedHeroIds.add(hero.id);
-    renderBulkRecipients();
-  });
-  $('#bulk-clear-all')?.addEventListener('click',()=>{bulkSelectedHeroIds.clear();renderBulkRecipients();});
-  $('#bulk-attachment')?.addEventListener('change',event=>{
-    const file=event.target.files?.[0];
-    try{validateCommunicationAttachment(file);$('#bulk-attachment-state').textContent=file?`Ready to attach: ${file.name}`:'PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';}catch(err){event.target.value='';$('#bulk-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';alert(err.message);}
-  });
-
-  $('#bulk-communication-form')?.addEventListener('submit',async event => {
-    event.preventDefault();
-    $('#bulk-error').hidden = true;
-    const selected=selectedBulkHeroes();
-    if(!selected.length) return showMessage($('#bulk-error'),'Select at least one eligible child before sending.');
-    const button = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
-    const previous = button?.textContent;
-    if(button){button.disabled=true;button.textContent='Preparing…';}
-    try {
-      const file=$('#bulk-attachment').files?.[0] || null;
-      const attachment=await uploadCommunicationAttachment(file,$('#bulk-attachment-state')) || {};
-      if(button) button.textContent='Sending…';
-      const result = await api('/api/admin-communications',{
-        method:'POST',
-        body:{
-          action:'send-bulk',
-          purpose:communicationPurpose(),
-          hero_ids:selected.map(h=>h.id),
-          subject:$('#bulk-subject').value,
-          notes:$('#bulk-message').value,
-          recipient_verified:$('#bulk-recipient-verified').checked,
-          sharing_necessary:$('#bulk-sharing-necessary').checked,
-          service_message_confirmed:$('#bulk-service-confirmed').checked,
-          ...attachment
-        }
-      });
-      const skipped=result.skipped?.length ? ` ${result.skipped.length} selected record${result.skipped.length===1?' was':'s were'} skipped because it was no longer eligible.` : '';
-      $('#bulk-state').textContent = `Sent ${result.count} private family email${result.count===1?'':'s'} and logged the communication against ${result.childCount} child record${result.childCount===1?'':'s'}.${skipped}`;
-      $('#bulk-subject').value=''; $('#bulk-message').value=''; $('#bulk-attachment').value='';
-      $('#bulk-attachment-state').textContent='PNG, JPEG, WebP or PDF, up to 10 MB. The same poster is attached to each family email.';
-      $('#bulk-recipient-verified').checked=false; $('#bulk-sharing-necessary').checked=false; $('#bulk-service-confirmed').checked=false;
-      bulkSelectedHeroIds.clear(); renderBulkRecipients();
-      await loadCommunications(); loadSummary();
-    } catch(err) { showMessage($('#bulk-error'),err.message); }
-    finally { if(button){button.disabled=false;button.textContent=previous;} }
-  });
-
-  function sendStatusLabel(item){
-    const status=item.send_status || 'logged';
-    return ({sent:'Email sent',failed:'Send failed',sending:'Sending',logged:'Logged'}[status] || status);
-  }
 
   async function loadCommunications() {
     const list = $('#communications-list');
     if(!list) return;
     list.innerHTML = '<div class="loading-card">Loading…</div>';
+
     try {
       communicationsCache = await api('/api/admin-communications');
-      populateCommunicationLinks(); syncCommunicationMode(); renderBulkRecipients({clearInvalid:true});
-      if($('#bulk-state') && !communicationsCache.emailConfigured) $('#bulk-state').textContent='Email delivery is not configured yet.';
-      const today = new Date(); today.setHours(23,59,59,999);
-      list.innerHTML = communicationsCache.items.length ? communicationsCache.items.map(item => {
-        const followUpDue = item.follow_up_date && !item.follow_up_completed_at && new Date(`${item.follow_up_date}T23:59:59`) <= today;
-        const attachment=item.attachment_path ? `<p><b>Attachment:</b> ${esc(item.attachment_name || 'Poster')} ${item.attachment_size?`· ${Math.max(1,Math.round(Number(item.attachment_size)/1024))} KB`:''}</p>` : '';
-        return `
+      populateCommunicationLinks();
+
+      list.innerHTML = communicationsCache.items.length ? communicationsCache.items.map(item => `
         <article class="admin-item communication-item">
           <div class="admin-item-head">
-            <div><strong>${esc(item.subject)}</strong><div class="small">${esc(item.method)} · ${esc(item.direction)} · ${esc(fmt(item.occurred_at))}</div></div>
-            <div class="status-stack"><span class="status-pill ${item.send_status==='failed'?'status-danger':''}">${esc(sendStatusLabel(item))}</span>${item.follow_up_date ? `<span class="status-pill ${followUpDue?'status-warning':''}">${item.follow_up_completed_at?'Follow-up completed':`Follow up ${esc(item.follow_up_date)}`}</span>` : ''}</div>
+            <div>
+              <strong>${esc(item.subject)}</strong>
+              <div class="small">${esc(item.method)} · ${esc(item.direction)} · ${esc(fmt(item.occurred_at))}</div>
+            </div>
+            ${item.follow_up_date ? `<span class="status-pill">Follow up ${esc(item.follow_up_date)}</span>` : ''}
           </div>
           ${item.linked_name ? `<p><b>${esc(item.linked_type)}:</b> ${esc(item.linked_name)}</p>` : ''}
           <p><b>Contact:</b> ${esc(item.contact_name || '—')} ${item.contact_email ? `· ${esc(item.contact_email)}` : ''} ${item.contact_phone ? `· ${esc(item.contact_phone)}` : ''}</p>
-          ${attachment}
-          <details><summary>View communication notes</summary><p><b>Notes:</b> ${esc(item.notes || '—')}</p><p><b>Outcome / next step:</b> ${esc(item.outcome || '—')}</p>${item.error_text?`<p class="error-copy"><b>Delivery error:</b> ${esc(item.error_text)}</p>`:''}<p><b>Logged by:</b> ${esc(item.created_by || '—')}</p></details>
+          <details>
+            <summary>View communication notes</summary>
+            <p><b>Notes:</b> ${esc(item.notes || '—')}</p>
+            <p><b>Outcome / next step:</b> ${esc(item.outcome || '—')}</p>
+            <p><b>Logged by:</b> ${esc(item.created_by || '—')}</p>
+          </details>
           <div class="admin-item-actions">
-            ${item.contact_email ? `<button class="btn btn-outline" data-reply-comm="${item.id}">Email again</button>` : ''}
-            ${item.attachment_path ? `<button class="btn btn-outline" data-open-comm-attachment="${item.id}">View attachment</button>` : ''}
-            ${item.follow_up_date && !item.follow_up_completed_at ? `<button class="btn btn-outline" data-complete-followup="${item.id}">Complete follow-up</button>` : ''}
+            ${item.contact_email ? `<a class="btn btn-outline" href="mailto:${encodeURIComponent(item.contact_email)}?subject=${encodeURIComponent(item.subject)}">Email</a>` : ''}
             <button class="btn btn-danger" data-delete-comm="${item.id}">Delete</button>
           </div>
-        </article>`;
-      }).join('') : '<div class="loading-card">No communications logged yet.</div>';
+        </article>
+      `).join('') : '<div class="loading-card">No communications logged yet.</div>';
 
-      $$('[data-reply-comm]').forEach(button => button.addEventListener('click',() => {
-        const item=communicationsCache.items.find(x=>x.id===button.dataset.replyComm); if(!item)return;
-        clearCommunicationForm();
-        if(item.hero_id) prefillCommunication(`hero:${item.hero_id}`,{send:true});
-        else if(item.referral_id) prefillCommunication(`referral:${item.referral_id}`,{send:true});
-        else { $('#comm-action').value='send'; $('#comm-contact-name').value=item.contact_name||''; $('#comm-contact-email').value=item.contact_email||''; syncCommunicationMode(); }
-        $('#comm-subject').value = /^Re:/i.test(item.subject||'') ? item.subject : `Re: ${item.subject||''}`;
-        $('#communication-editor').scrollIntoView({behavior:'smooth',block:'start'});
+      $$('[data-delete-comm]').forEach(button => button.addEventListener('click',() => {
+        deleteRecord({
+          url:`/api/admin-communications?id=${encodeURIComponent(button.dataset.deleteComm)}`,
+          label:'this communication record',
+          after:loadCommunications
+        });
       }));
-      $$('[data-open-comm-attachment]').forEach(button=>button.addEventListener('click',async()=>{
-        const tab=window.open('about:blank','_blank');
-        try{
-          const result=await api('/api/admin-communications',{method:'POST',body:{action:'attachment-url',id:button.dataset.openCommAttachment}});
-          if(tab){tab.opener=null;tab.location=result.url;}else{window.location.assign(result.url);}
-        }catch(err){if(tab)tab.close();alert(err.message);}
-      }));
-      $$('[data-complete-followup]').forEach(button => button.addEventListener('click',async() => {
-        await api('/api/admin-communications',{method:'POST',body:{action:'complete-follow-up',id:button.dataset.completeFollowup}});
-        await loadCommunications(); loadSummary();
-      }));
-      $$('[data-delete-comm]').forEach(button => button.addEventListener('click',() => deleteRecord({url:`/api/admin-communications?id=${encodeURIComponent(button.dataset.deleteComm)}`,label:'this communication record',after:loadCommunications})));
-    } catch(err) { list.innerHTML = `<div class="error-box">${esc(err.message)}</div>`; }
-  }
-
-  // ------------------------------------------------------------
-  // Appointments
-  // ------------------------------------------------------------
-  let appointmentsCache={items:[],heroes:[],referrals:[],adminReminderEmail:''};
-
-  function londonParts(iso){
-    const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(iso)).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
-    return {date:`${parts.year}-${parts.month}-${parts.day}`,time:`${parts.hour}:${parts.minute}`,month:`${parts.year}-${parts.month}`};
-  }
-  function appointmentDateLabel(iso){return new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));}
-
-  function populateAppointmentLinks(){
-    const select=$('#appointment-link'); if(!select)return;
-    const current=select.value;
-    select.innerHTML='<option value="">Not linked to a record</option>'+appointmentsCache.heroes.map(h=>`<option value="hero:${h.id}">Harper’s Hero — ${esc(h.preferred_name||h.child_name||'Child')}</option>`).join('')+appointmentsCache.referrals.map(r=>`<option value="referral:${r.id}">Referral — ${esc(r.child_name||'Child')}</option>`).join('');
-    if([...select.options].some(o=>o.value===current))select.value=current;
-  }
-
-  function prefillAppointmentLink(value){
-    populateAppointmentLinks(); $('#appointment-link').value=value||'';
-    const [type,id]=String(value||'').split(':');
-    const record=type==='hero'?appointmentsCache.heroes.find(x=>x.id===id):appointmentsCache.referrals.find(x=>x.id===id);
-    if(record){
-      $('#appointment-with').value=record.primary_contact_name||record.submitter_name||record.family_contact_name||'';
-      $('#appointment-email').value=record.primary_contact_email||record.submitter_email||record.family_contact_email||'';
-      if(!$('#appointment-title').value) $('#appointment-title').value=type==='hero'?'Family contact':'Referral follow-up';
+    } catch(err) {
+      list.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
     }
   }
-
-  function clearAppointmentForm(){
-    $('#appointment-id').value=''; $('#appointment-editor-title').textContent='Add appointment';
-    $('#appointment-link').value=''; $('#appointment-type').value='Family contact'; $('#appointment-title').value=''; $('#appointment-with').value=''; $('#appointment-email').value='';
-    const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1); $('#appointment-date').value=localDateTime(tomorrow).slice(0,10); $('#appointment-time').value='10:00'; $('#appointment-end-time').value=''; $('#appointment-location').value=''; $('#appointment-notes').value='';
-    $('#appointment-reminder-admin').checked=true; $('#appointment-reminder-family').checked=false; $('#appointment-reminder-24h').checked=true; $('#appointment-reminder-morning').checked=true; $('#appointment-reminder-30m').checked=true; $('#appointment-error').hidden=true;
-  }
-
-  function editAppointment(id){
-    const item=appointmentsCache.items.find(x=>x.id===id); if(!item)return;
-    $('#appointment-id').value=item.id; $('#appointment-editor-title').textContent='Edit appointment';
-    populateAppointmentLinks(); $('#appointment-link').value=item.hero_id?`hero:${item.hero_id}`:(item.referral_id?`referral:${item.referral_id}`:'');
-    $('#appointment-type').value=[...$('#appointment-type').options].some(o=>o.value===item.appointment_type)?item.appointment_type:'Other';
-    $('#appointment-title').value=item.title||''; $('#appointment-with').value=item.meeting_with||''; $('#appointment-email').value=item.contact_email||'';
-    const start=londonParts(item.start_at); $('#appointment-date').value=start.date; $('#appointment-time').value=start.time; $('#appointment-end-time').value=item.end_at?londonParts(item.end_at).time:'';
-    $('#appointment-location').value=item.location||''; $('#appointment-notes').value=item.notes||'';
-    $('#appointment-reminder-admin').checked=item.reminder_admin!==false; $('#appointment-reminder-family').checked=!!item.reminder_family; $('#appointment-reminder-24h').checked=item.reminder_24h!==false; $('#appointment-reminder-morning').checked=item.reminder_morning!==false; $('#appointment-reminder-30m').checked=item.reminder_30m!==false;
-    $('#appointment-error').hidden=true; $('#appointment-editor').scrollIntoView({behavior:'smooth',block:'start'});
-  }
-
-  function renderAppointmentCalendar(){
-    const target=$('#appointment-calendar'); if(!target)return;
-    const month=$('#calendar-month').value || localDateTime().slice(0,7); $('#calendar-month').value=month;
-    const [year,mon]=month.split('-').map(Number); const first=new Date(year,mon-1,1); const days=new Date(year,mon,0).getDate(); const leading=(first.getDay()+6)%7;
-    const cells=[]; for(let i=0;i<leading;i++)cells.push('<div class="calendar-day calendar-empty"></div>');
-    for(let day=1;day<=days;day++){
-      const date=`${year}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const events=appointmentsCache.items.filter(a=>a.status==='scheduled' && londonParts(a.start_at).date===date);
-      cells.push(`<div class="calendar-day"><strong>${day}</strong>${events.map(a=>`<button type="button" class="calendar-event" data-calendar-appointment="${a.id}"><span>${esc(londonParts(a.start_at).time)}</span>${esc(a.title)}</button>`).join('')}</div>`);
-    }
-    target.innerHTML=cells.join('');
-    $$('[data-calendar-appointment]').forEach(b=>b.addEventListener('click',()=>editAppointment(b.dataset.calendarAppointment)));
-  }
-
-  function reminderSummary(item){
-    const rows=item.reminders||[]; if(!rows.length)return 'No reminder jobs recorded.';
-    const counts=rows.reduce((a,r)=>(a[r.status]=(a[r.status]||0)+1,a),{});
-    return Object.entries(counts).map(([k,v])=>`${v} ${k}`).join(' · ');
-  }
-
-  async function loadAppointments(){
-    const list=$('#appointments-list'); if(!list)return;
-    list.innerHTML='<div class="loading-card">Loading…</div>';
-    try{
-      appointmentsCache=await api('/api/admin-appointments'); populateAppointmentLinks();
-      const now=Date.now(); const upcoming=appointmentsCache.items.filter(x=>x.status==='scheduled' && new Date(x.start_at).getTime()>=now);
-      list.innerHTML=upcoming.length?upcoming.map(item=>`<article class="admin-item appointment-item"><div class="admin-item-head"><div><strong>${esc(item.title)}</strong><div class="small">${esc(appointmentDateLabel(item.start_at))}${item.end_at?`–${esc(londonParts(item.end_at).time)}`:''}</div></div><span class="status-pill">${esc(item.appointment_type||'Appointment')}</span></div>${item.linked_name?`<p><b>${esc(item.linked_type)}:</b> ${esc(item.linked_name)}</p>`:''}<p><b>With:</b> ${esc(item.meeting_with||'—')} ${item.contact_email?`· ${esc(item.contact_email)}`:''}<br><b>Where:</b> ${esc(item.location||'—')}</p>${item.notes?`<details><summary>Internal notes</summary><p>${esc(item.notes)}</p></details>`:''}<p class="small"><b>Reminders:</b> ${esc(reminderSummary(item))}</p><div class="admin-item-actions"><button class="btn btn-outline" data-edit-appointment="${item.id}">Edit</button><button class="btn btn-outline" data-complete-appointment="${item.id}">Complete</button><button class="btn btn-danger" data-delete-appointment="${item.id}">Delete</button></div></article>`).join(''):'<div class="loading-card">No upcoming appointments.</div>';
-      renderAppointmentCalendar();
-      $('#appointment-reminder-state').textContent=appointmentsCache.adminReminderEmail?`Admin reminders will be sent to ${appointmentsCache.adminReminderEmail}.`:'No admin reminder email is configured. Appointments will still save, but admin reminders cannot be scheduled.';
-      $$('[data-edit-appointment]').forEach(b=>b.addEventListener('click',()=>editAppointment(b.dataset.editAppointment)));
-      $$('[data-complete-appointment]').forEach(b=>b.addEventListener('click',async()=>{await api('/api/admin-appointments',{method:'POST',body:{action:'complete',id:b.dataset.completeAppointment}});await loadAppointments();loadSummary();}));
-      $$('[data-delete-appointment]').forEach(b=>b.addEventListener('click',()=>deleteRecord({url:`/api/admin-appointments?id=${encodeURIComponent(b.dataset.deleteAppointment)}`,label:'this appointment',after:loadAppointments})));
-    }catch(err){list.innerHTML=`<div class="error-box">${esc(err.message)}</div>`;}
-  }
-
-  $('#appointment-link')?.addEventListener('change',e=>prefillAppointmentLink(e.target.value));
-  $('#new-appointment')?.addEventListener('click',()=>{clearAppointmentForm();$('#appointment-editor').scrollIntoView({behavior:'smooth',block:'start'});});
-  $('#clear-appointment')?.addEventListener('click',clearAppointmentForm);
-  $('#calendar-month')?.addEventListener('change',renderAppointmentCalendar);
-  $('#appointment-editor')?.addEventListener('submit',async event=>{
-    event.preventDefault(); $('#appointment-error').hidden=true;
-    const link=$('#appointment-link').value; const [type,linkedId]=link?link.split(':'):['','']; const id=$('#appointment-id').value;
-    const body={action:id?'update':'create',id,hero_id:type==='hero'?linkedId:'',referral_id:type==='referral'?linkedId:'',appointment_type:$('#appointment-type').value,title:$('#appointment-title').value,meeting_with:$('#appointment-with').value,contact_email:$('#appointment-email').value,date:$('#appointment-date').value,time:$('#appointment-time').value,end_time:$('#appointment-end-time').value,location:$('#appointment-location').value,notes:$('#appointment-notes').value,status:'scheduled',reminder_admin:$('#appointment-reminder-admin').checked,reminder_family:$('#appointment-reminder-family').checked,reminder_24h:$('#appointment-reminder-24h').checked,reminder_morning:$('#appointment-reminder-morning').checked,reminder_30m:$('#appointment-reminder-30m').checked};
-    try{const result=await api('/api/admin-appointments',{method:'POST',body});const r=result.reminders||{};clearAppointmentForm();await loadAppointments();loadSummary();$('#appointment-reminder-state').textContent=`Saved. ${r.scheduled||0} reminder${r.scheduled===1?'':'s'} scheduled${r.deferred?`, ${r.deferred} staged for later`:''}${r.failed?`, ${r.failed} could not be scheduled`:''}.`;}
-    catch(err){showMessage($('#appointment-error'),err.message);}
-  });
 
   // ------------------------------------------------------------
   // Events — poster promotion + photographs + AI review

@@ -1,50 +1,31 @@
-PROJECT GOLDEN CHILD — v2.5.0 UPGRADE
-CRACLL-DERIVED COMMUNICATIONS + APPOINTMENTS
+PROJECT GOLDEN CHILD v2.5.0 — MEDALLION WEBSITE REDESIGN
 
-WHAT THIS RELEASE ADDS
-• Direct family emails from the secure Communications area, with delivery status retained in the communication history.
-• Safe group emails to consented Harper's Heroes audiences. Each family is sent an individual message; family addresses are not disclosed to other recipients.
-• Follow-up dates and a dashboard count of overdue/incomplete follow-ups.
-• Appointments linked to a Harper's Hero or referral, with month calendar and upcoming appointment list.
-• Optional automatic admin/family reminders at 24 hours, 08:00 on the appointment day and 30 minutes before.
-• Full family delivery address collection for welcome packs and gifts.
-• Contact/address correction from the private admin screens.
+This is a design-only release based on the approved circular gold Project Golden Child emblem.
 
-DEPLOYMENT ORDER — EXISTING LIVE v2.x DATABASE
-1. In Supabase SQL Editor run:
-   supabase/UPDATE_v2.5.0.sql
+WHAT CHANGES
+- New circular medallion becomes the main website brand mark.
+- Homepage hero redesigned around the medallion rather than a rectangular logo image.
+- Ivory, cream, gold, bronze and deep brown become the core website palette.
+- Gold ring / glow / sparkle details echo the emblem without making pages difficult to read.
+- Cards, forms, event pages, buttons, page headers and footer have been restyled consistently.
+- The medallion is also used for the website favicon and compact navigation mark.
+- Mobile and tablet layouts have been adjusted for the circular artwork.
 
-2. The FINAL CHECK at the bottom of that SQL file must return ZERO ROWS.
+WHAT DOES NOT CHANGE
+- No database changes.
+- No Supabase SQL.
+- No Vercel environment variable changes.
+- Referrals, Harper's Heroes, postal address fields, event posters, photographs, communications and AI event reviews remain intact.
+- Admin functionality remains intact; it simply inherits the new compact brand mark.
 
-3. Add/confirm these Vercel environment variables:
-   RESEND_API_KEY
-   FROM_EMAIL
-   NOTIFICATION_EMAIL
-   REPLY_TO_EMAIL                 optional but recommended
-   APPOINTMENT_ADMIN_EMAIL        optional; falls back to NOTIFICATION_EMAIL
-   CRON_SECRET                    long random secret
+INSTALL
+1. Extract this ZIP.
+2. Replace the current website files in your GitHub repository, keeping the hidden .git folder.
+3. GitHub Desktop commit:
+   Project Golden Child v2.5.0 medallion redesign
+4. Commit to main -> Push origin.
+5. Wait for Vercel to show Ready.
+6. Press Ctrl+F5 once on the live website.
+7. Check Home, Harper's Heroes, Events, Register a child and one mobile view.
 
-   Existing Supabase/admin environment variables remain required.
-
-4. Deploy this v2.5.0 code.
-
-5. Open /admin → Dashboard → System Health → Check now.
-   Expected schema: 2.5.0
-   All database checks and the write test must pass.
-
-6. Test with fictional data before using the new features with real family information:
-   a. register a fictional child and confirm the full delivery address appears in Referrals;
-   b. promote the record and confirm the address carries into Harper's Heroes;
-   c. send a test email to an email address you control;
-   d. set a communication follow-up date, then mark the follow-up complete;
-   e. create an appointment, edit it, complete it and delete a separate test appointment;
-   f. verify the appointment appears in the month calendar;
-   g. only enable family reminders after checking the family/contact email shown on the appointment.
-
-IMPORTANT
-• Do not deploy the code before applying UPDATE_v2.5.0.sql to the live Supabase project.
-• Email sending is intentionally blocked unless the recipient/data-sharing confirmations are ticked.
-• Bulk email only selects active Harper's Heroes records with the relevant updates/events consent and a valid email address.
-• Appointment reminders are email reminders. Appointments themselves remain saved even if the email service is not configured.
-• The daily Vercel cron stages reminders for appointments that were initially too far ahead for the email provider's scheduled-send window.
-• Do not put RESEND_API_KEY, Supabase secret keys, SESSION_SECRET or CRON_SECRET into browser/public code.
+NO SUPABASE SQL IS REQUIRED.

@@ -1,16 +1,12 @@
-PROJECT GOLDEN CHILD v2.5.1 — UPDATE STEPS
+PROJECT GOLDEN CHILD v2.5.1 — CAPE LOGO + LUXURY STARLIGHT REDESIGN
 
-This is a code-only update. No Supabase/database migration is required.
+1. No Supabase SQL is required.
+2. Replace the current website files with this v2.5.1 package.
+3. Keep the hidden .git folder.
+4. GitHub Desktop commit message:
+   Project Golden Child v2.5.1 cape luxury redesign
+5. Commit to main -> Push origin.
+6. Wait for Vercel to show Ready.
+7. Press Ctrl+F5 once on the public site so the new CSS and restored logo assets replace cached v2.5.0 files.
 
-1. Deploy the contents of this v2.5.1 ProjectGoldenChild folder/repository to Vercel.
-2. Keep all existing v2.5.0 environment variables exactly as they are.
-3. After deployment, sign in to /admin and confirm the dashboard shows:
-   - Total referrals: all referral records, including records already promoted to Harper's Heroes.
-   - Harper's Heroes: all non-archived Hero records.
-   - The Referrals navigation badge: only referrals still awaiting review.
-4. Submit a test referral and confirm the success message includes guidance to:
-   - check inbox and junk/spam over the next few days; and
-   - add Project Golden Child to email contacts or the safe-senders list.
-5. Delete the test referral from the admin area when finished.
-
-No SQL file needs to be run for this update.
+The logo is the established cape + Project Golden Child wordmark. The medallion itself is not used as the logo. Its ivory/gold sparkle treatment is used only as visual inspiration for the website background and finish.
