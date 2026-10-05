@@ -1,0 +1,10 @@
+PROJECT GOLDEN CHILD v2.5.2 — LUXURY GOLD & GLITTER REDESIGN
+
+1. No Supabase changes are required.
+2. Replace the existing website files with this package, keeping the hidden .git folder.
+3. GitHub Desktop commit: Project Golden Child v2.5.2 luxury gold glitter redesign
+4. Commit to main -> Push origin.
+5. Wait for Vercel Ready.
+6. Press Ctrl+F5 once on the live site to clear old CSS/image caches.
+
+This release changes public visual design only. The established cape logo remains the brand identity.

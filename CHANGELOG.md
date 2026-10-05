@@ -1,3 +1,16 @@
+# v2.5.2 — Luxury gold & glitter visual redesign
+
+- Retains the established Project Golden Child cape logo and wordmark exactly as the identity.
+- Rebuilds the public visual environment around champagne gold, pearl ivory, metallic sweeps, controlled glitter and starlight.
+- Adds bespoke lightweight SVG stardust, dark stardust and gold-sweep assets so the finish is richer than flat CSS gradients.
+- Hero now has a cinematic pearlescent halo, fine glitter, metallic arcs and a stronger floating treatment around the cape logo.
+- Internal page heroes use the same premium gold-sweep/starlight language without turning the badge artwork into a logo.
+- Cards use a pearl lacquer finish with metallic gradient borders and restrained glints.
+- Dark sections and footer now use a richer gold-night-sky treatment.
+- Forms remain deliberately calm and legible while surrounding surfaces carry the premium visual language.
+- Motion is subtle and automatically disabled for users who prefer reduced motion.
+- No database or Supabase changes are required.
+
 # v2.5.1 — Cape logo restored + luxury starlight visual system
 
 - Restored the established Project Golden Child cape-and-wordmark logo as the primary brand identity.
